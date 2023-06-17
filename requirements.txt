@@ -1,0 +1,5 @@
+deep-translator==1.11.1
+discord==2.2.3
+psutil==5.9.5
+python-dotenv==1.0.0
+requests==2.31.0
