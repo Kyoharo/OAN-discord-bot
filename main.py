@@ -138,7 +138,7 @@ async def ask_question(ctx, *, your_question):
         for i in range(0, len(response), 2000):
             texts.append(response[i:i+2000])
         for text in texts:
-            your_question= your_question[:230]
+            your_question = your_question[:230]
             embed = discord.Embed(title=f""">   ``{your_question}``""",description=f"{text}",color=discord.Color.dark_gold())
             embed.set_author(name="OAN",
             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
@@ -146,7 +146,7 @@ async def ask_question(ctx, *, your_question):
         view = PageView(embeds)
         await ctx.reply(embed=view.initial(), view=view)
     else:
-        your_question= your_question[:230]
+        your_question = your_question[:230]
         embed = discord.Embed(title=f""">   ``{your_question}``""",description=f"{response}",color=discord.Color.dark_gold())
         embed.set_author(name="OAN",
         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
@@ -211,6 +211,7 @@ async def on_message(message):
                         print("tts done")
 
                         if os.path.exists(output_path):
+                            your_question = your_question[:230]
                             embed = discord.Embed(title=f""">   ``{your_question}``""",
                                                 description=f"{response}",
                                                 color=discord.Color.dark_gold())
@@ -277,6 +278,7 @@ async def ask_question(ctx):
                     print("tts done")
 
                     if os.path.exists(output_path):
+                        your_question = your_question[:230]
                         embed = discord.Embed(title=f""">   ``{your_question}``""",
                                             description=f"{response}",
                                             color=discord.Color.dark_gold())
@@ -293,7 +295,7 @@ async def ask_question(ctx):
                     for i in range(0, len(response), 2000):
                         texts.append(response[i:i+2000])
                     for text in texts:
-                        your_question= your_question[:230]
+                        your_question = your_question[:230]
                         embed = discord.Embed(title=f""">   ``{your_question}``""",description=f"{text}",color=discord.Color.dark_gold())
                         embed.set_author(name="OAN",
                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
@@ -301,7 +303,7 @@ async def ask_question(ctx):
                     view = PageView(embeds)
                     await ctx.reply(embed=view.initial(), view=view)
                 else:
-                    your_question= your_question[:230]
+                    your_question = your_question[:230]
                     embed = discord.Embed(title=f""">   ``{your_question}``""",description=f"{response}",color=discord.Color.dark_gold())
                     embed.set_author(name="OAN",
                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
@@ -327,7 +329,7 @@ async def ask_question(interaction: discord.Interaction, voice_record: discord.A
         os.makedirs(DOWNLOAD_DIR)
     filename = os.path.join(DOWNLOAD_DIR, voice_record.filename)
     await voice_record.save(filename)
-
+    #error
     if not voice_record.content_type.startswith('audio'):
         embed = discord.Embed(
             title="Invalid File",
@@ -344,6 +346,7 @@ async def ask_question(interaction: discord.Interaction, voice_record: discord.A
     response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
 
     if "en" in language or "ja" in language and len(response) < 2000:
+        your_question = your_question[:230]
         output_path = f"audio_files/{user_id}/output.wav"
         tts_audio(response, output_path, language)
         print("tts done")
