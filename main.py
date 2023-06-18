@@ -10,7 +10,6 @@ from discord.ext import commands
 from core.pageview import PageView
 from TTS.api import TTS
 import whisper
-import subprocess
 
 activity = ["/", "OAN"]
 load_dotenv()
