@@ -54,7 +54,6 @@ async def ask_question(interaction: discord.Interaction, your_question: str):
     pass_question = f"**{user_name}**: {your_question}"
     await interaction.response.defer(thinking=True)
         # Detect the language
-    print(language_dict)
     new_language =  detect_language(your_question)
     if user_id in language_dict and new_language != language_dict[user_id]:
         response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
@@ -83,9 +82,9 @@ async def ask_question(interaction: discord.Interaction, your_question: str):
     
     try:    
         guild = interaction.guild   
-        print(f"Guild: {guild.name},   username: {user_name}")
+        print(f"Guild: {guild.name},   username: {user_name}\n-----------------------------")
     except Exception as e:
-        print(f"username: {user_name}")
+        print(f"username: {user_name}\n-----------------------------")
 
 
 #---------------------------------------------          reoan       -----------------------------------------------------------------
@@ -120,8 +119,6 @@ async def language(interaction: discord.Interaction, language: app_commands.Choi
     user_name = interaction.user.name
     await interaction.response.defer(thinking=True)
     pass_question = f"**{user_name}**: {your_question}"
-         # Detect the language
-    print(language_dict)
     new_language =  detect_language(your_question)
     if user_id in language_dict and new_language != language_dict[user_id]:
         response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
@@ -147,9 +144,9 @@ async def language(interaction: discord.Interaction, language: app_commands.Choi
         await interaction.followup.send(embed=embed)
     try:    
         guild = interaction.guild   
-        print(f"Guild: {guild.name},   username: {user_name}")
+        print(f"Guild: {guild.name},   username: {user_name}\n-----------------------------")
     except Exception as e:
-        print(f"username: {user_name}")
+        print(f"username: {user_name}\n-----------------------------")
 
 #---------------------------------------------         !ask       -----------------------------------------------------------------
 @client.command(name='ask', help='Ask me a question.')
@@ -189,9 +186,9 @@ async def ask_question(ctx, *, your_question):
 
     try:
         guild = ctx.guild
-        print(f"!ask** Guild: {guild.name},   username: {user_name}")
+        print(f"!ask** Guild: {guild.name},   username: {user_name}\n-----------------------------")
     except Exception as e:
-        print(f"!ask** username: {user_name}")
+        print(f"!ask** username: {user_name}\n-----------------------------")
 
 
 
@@ -234,7 +231,6 @@ async def on_message(message):
                     await attachment.save(filename)
 
                     your_question, language = transcribe_audio(filename)
-                    print(your_question, language)
                     pass_question = f"**{user_name}**: {your_question}"
                     # Detect the language
                     if int(user_id) in language_dict and language != language_dict[int(user_id)]:
@@ -247,8 +243,6 @@ async def on_message(message):
                     if "en" in language or "ja" in language and len(response) < 2000:
                         output_path = f"audio_files/{user_id}/output.wav"
                         tts_audio(response, output_path, language)
-                        print("tts done")
-
                         if os.path.exists(output_path):
                             your_question = your_question[:230]
                             embed = discord.Embed(title=f""">   ``{your_question}``""",
@@ -289,7 +283,6 @@ async def on_message(message):
             else:
                 response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
             language_dict[user_id] = new_language 
-            print(language_dict)
             embeds = []
             if len(response) > 2000:    
                 texts = []
@@ -311,9 +304,9 @@ async def on_message(message):
 
         try:
             guild = message.guild
-            print(f"!ask** Guild: {guild.name},   username: {user_name}")
+            print(f"!ask** Guild: {guild.name},   username: {user_name}\n-----------------------------")
         except Exception as e:
-            print(f"!ask** username: {user_name}")
+            print(f"!ask** username: {user_name}\n-----------------------------")
                 
     await client.process_commands(message)
 
@@ -337,7 +330,6 @@ async def ask_question(ctx):
                 filename = os.path.join(DOWNLOAD_DIR, attachment.filename)
                 await attachment.save(filename)
                 your_question, language = transcribe_audio(filename)
-                print(your_question, language)
                 pass_question = f"**{user_name}**: {your_question}"
                 await ctx.defer()
                 # Detect the language
@@ -351,8 +343,6 @@ async def ask_question(ctx):
                 if "en" in language or "ja" in language and len(response) < 2000:
                     output_path = f"audio_files/{user_id}/output.wav"
                     tts_audio(response, output_path, language)
-                    print("tts done")
-
                     if os.path.exists(output_path):
                         your_question = your_question[:230]
                         embed = discord.Embed(title=f""">   ``{your_question}``""",
@@ -388,9 +378,9 @@ async def ask_question(ctx):
 
                 try:
                     guild = ctx.guild
-                    print(f"!ask** Guild: {guild.name},   username: {user_name}")
+                    print(f"!ask** Guild: {guild.name},   username: {user_name}\n-----------------------------")
                 except Exception as e:
-                    print(f"!ask** username: {user_name}")
+                    print(f"!ask** username: {user_name}\n-----------------------------")
 
 
 #---------------------------------------------------------------------------------------------------------------------- voice ----------------------------------------------------------------------
@@ -417,7 +407,6 @@ async def ask_question(interaction: discord.Interaction, voice_record: discord.A
         return
 
     your_question, language = transcribe_audio(filename)
-    print(your_question, language)
     pass_question = f"**{user_name}**: {your_question}"
  # Detect the language
     if int(user_id) in language_dict and language != language_dict[int(user_id)]:
@@ -430,7 +419,6 @@ async def ask_question(interaction: discord.Interaction, voice_record: discord.A
         your_question = your_question[:230]
         output_path = f"audio_files/{user_id}/output.wav"
         tts_audio(response, output_path, language)
-        print("tts done")
 
         if os.path.exists(output_path):
             embed = discord.Embed(
