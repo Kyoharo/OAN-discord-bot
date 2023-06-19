@@ -9,15 +9,26 @@ from discord.ext import commands
 from core.pageview import PageView
 from TTS.api import TTS
 import whisper
+import langid
+
+language_dict = {}
+def detect_language(text):
+    langid_result = langid.classify(text)
+    excluded_languages = ["fa", "ug"]
+    if langid_result[0] in excluded_languages:
+        return "ar"  # Set the language to Arabic instead
+    else:
+        return langid_result[0]
+
 
 activity = ["/", "OAN"]
 load_dotenv()
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 Bard_Token = os.getenv('BARD_TOKEN')
-
 chat = ChatBard()
 intents = discord.Intents.default()
 intents.message_content = True
+
 class aclient(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="!", intents=intents)
@@ -39,10 +50,18 @@ client = aclient()
 @client.tree.command(name='ask', description='Ask me a question.')
 async def ask_question(interaction: discord.Interaction, your_question: str):
     user_id = interaction.user.id
-    user_name = interaction.user.name        
+    user_name = interaction.user.name
     pass_question = f"**{user_name}**: {your_question}"
     await interaction.response.defer(thinking=True)
-    response = await asyncio.to_thread(chat.start, user_id, pass_question)
+        # Detect the language
+    print(language_dict)
+    new_language =  detect_language(your_question)
+    if user_id in language_dict and new_language != language_dict[user_id]:
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
+    else:
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+    language_dict[user_id] = new_language 
+
     embeds = []
     if len(response) > 2000:
         texts = []
@@ -101,7 +120,15 @@ async def language(interaction: discord.Interaction, language: app_commands.Choi
     user_name = interaction.user.name
     await interaction.response.defer(thinking=True)
     pass_question = f"**{user_name}**: {your_question}"
-    response = await asyncio.to_thread(chat.start, user_id, pass_question, language.name.lower(),reset="reset")
+         # Detect the language
+    print(language_dict)
+    new_language =  detect_language(your_question)
+    if user_id in language_dict and new_language != language_dict[user_id]:
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
+    else:
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+    language_dict[user_id] = new_language 
+
     embeds = []
     if len(response) > 2000:
         texts = [response[i:i+2000] for i in range(0, len(response), 2000)]
@@ -131,7 +158,14 @@ async def ask_question(ctx, *, your_question):
     user_name = ctx.author.name
     pass_question = f"**{user_name}**: {your_question}"
     await ctx.defer()
-    response = await asyncio.to_thread(chat.start, user_id, pass_question)
+         # Detect the language
+    new_language =  detect_language(your_question)
+    if user_id in language_dict and new_language != language_dict[user_id]:
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
+    else:
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+    language_dict[user_id] = new_language 
+
     embeds = []
     if len(response) > 2000:
         texts = []
@@ -202,8 +236,13 @@ async def on_message(message):
                     your_question, language = transcribe_audio(filename)
                     print(your_question, language)
                     pass_question = f"**{user_name}**: {your_question}"
+                    # Detect the language
+                    if int(user_id) in language_dict and language != language_dict[int(user_id)]:
+                        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language, reset="reset")    
+                    else:
+                        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+                    language_dict[int(user_id)] = language 
 
-                    response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
                     #convert the response to speech
                     if "en" in language or "ja" in language and len(response) < 2000:
                         output_path = f"audio_files/{user_id}/output.wav"
@@ -239,11 +278,43 @@ async def on_message(message):
                         embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                         await message.channel.send(embed=embed)
 
-                    try:
-                        guild = message.guild
-                        print(f"!ask** Guild: {guild.name}, username: {user_name}")
-                    except Exception as e:
-                        print(f"!ask** username: {user_name}")
+        else:
+            user_id = message.author.id
+            user_name = message.author.name
+            pass_question = f"**{user_name}**: {message.content}"
+                     # Detect the language
+            new_language =  detect_language(message.content)
+            if user_id in language_dict and new_language != language_dict[user_id]:
+                response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
+            else:
+                response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+            language_dict[user_id] = new_language 
+            print(language_dict)
+            embeds = []
+            if len(response) > 2000:    
+                texts = []
+                for i in range(0, len(response), 2000):
+                    texts.append(response[i:i+2000])
+                for text in texts:
+                    your_question = message.content[:230]
+                    embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
+                    embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                    embeds.append(embed)
+                view = PageView(embeds)
+                await message.reply(embed=view.initial(), view=view)
+            else:
+                your_question = message.content[:230]
+                embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+                embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                await message.reply(embed=embed)
+
+        try:
+            guild = message.guild
+            print(f"!ask** Guild: {guild.name},   username: {user_name}")
+        except Exception as e:
+            print(f"!ask** username: {user_name}")
+                
     await client.process_commands(message)
 
 
@@ -269,7 +340,12 @@ async def ask_question(ctx):
                 print(your_question, language)
                 pass_question = f"**{user_name}**: {your_question}"
                 await ctx.defer()
-                response = await asyncio.to_thread(chat.start, int(user_id), pass_question,language)
+                # Detect the language
+                if int(user_id) in language_dict and language != language_dict[int(user_id)]:
+                    response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language, reset="reset")    
+                else:
+                    response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+                language_dict[int(user_id)] = language 
 
                 #convert the response to speech
                 if "en" in language or "ja" in language and len(response) < 2000:
@@ -343,7 +419,12 @@ async def ask_question(interaction: discord.Interaction, voice_record: discord.A
     your_question, language = transcribe_audio(filename)
     print(your_question, language)
     pass_question = f"**{user_name}**: {your_question}"
-    response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+ # Detect the language
+    if int(user_id) in language_dict and language != language_dict[int(user_id)]:
+        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language, reset="reset")    
+    else:
+        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+    language_dict[int(user_id)] = language 
 
     if "en" in language or "ja" in language and len(response) < 2000:
         your_question = your_question[:230]
