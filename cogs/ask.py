@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-
 from core.pageview import PageView
 from bardapi import ChatBard
 import asyncio
@@ -12,8 +11,6 @@ import os
 
 
 language_dict = {}
-
-#-----------------------------
 chat = ChatBard()
 
 def detect_language(text):
@@ -23,13 +20,94 @@ def detect_language(text):
         return "ar"  # Set the language to Arabic instead
     else:
         return langid_result[0]
-    
 
-class MyCog(commands.Cog):
+class MyCog1(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-#---------------------------------------------         slash voice       -----------------------------------------------------------------
+    @app_commands.command(name="ask", description="Ask me a question.")
+    async def ask(self, interaction: discord.Interaction, your_question: str):
+        user_id = interaction.user.id
+        user_name = interaction.user.name
+        pass_question = f"**{user_name}**: {your_question}"
+        await interaction.response.defer(thinking=True)
+            # Detect the language
+        new_language =  detect_language(your_question)
+        if user_id in language_dict and new_language != language_dict[user_id]:
+            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
+        else:
+            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+        language_dict[user_id] = new_language 
+
+        embeds = []
+        if len(response) > 2000:
+            texts = []
+            for i in range(0, len(response), 2000):
+                texts.append(response[i:i+2000])
+            for text in texts:
+                your_question = your_question[:230]
+                embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
+                embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                embeds.append(embed)
+            view = PageView(embeds)
+            await interaction.followup.send(embed=view.initial(), view=view)
+        else:
+            your_question = your_question[:230]
+            embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+            embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+        
+        try:    
+            guild = interaction.guild   
+            print(f"Guild: {guild.name},   username: {user_name}\n-----------------------------")
+        except Exception as e:
+            print(f"username: {user_name}\n-----------------------------")
+
+
+    @commands.command(name='ask', help='Ask me a question.')
+    async def ask_cmd(self, ctx, *, your_question):
+        user_id = ctx.author.id
+        user_name = ctx.author.name
+        pass_question = f"**{user_name}**: {your_question}"
+        await ctx.defer()
+            # Detect the language
+        new_language =  detect_language(your_question)
+        if user_id in language_dict and new_language != language_dict[user_id]:
+            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
+        else:
+            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+        language_dict[user_id] = new_language 
+
+        embeds = []
+        if len(response) > 2000:
+            texts = []
+            for i in range(0, len(response), 2000):
+                texts.append(response[i:i+2000])
+            for text in texts:
+                your_question = your_question[:230]
+                embed = discord.Embed(title=f""">   ``{your_question}``""",description=f"{text}",color=discord.Color.dark_gold())
+                embed.set_author(name="OAN",
+                icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                embeds.append(embed)
+            view = PageView(embeds)
+            await ctx.reply(embed=view.initial(), view=view)
+        else:
+            your_question = your_question[:230]
+            embed = discord.Embed(title=f""">   ``{your_question}``""",description=f"{response}",color=discord.Color.dark_gold())
+            embed.set_author(name="OAN",
+            icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+            embed.set_footer(text=f'{user_name}', icon_url=ctx.author.avatar.url)
+            await ctx.reply(embed=embed)
+
+        try:
+            guild = ctx.guild
+            print(f"!ask** Guild: {guild.name},   username: {user_name}\n-----------------------------")
+        except Exception as e:
+            print(f"!ask** username: {user_name}\n-----------------------------")
+
+    
+#----------------------------------------------------------------------
     @app_commands.command(name='voice', description='Communicate with the bot using Record')
     async def ask_question(self, interaction: discord.Interaction, voice_record: discord.Attachment):
         user_name = interaction.user.name
@@ -111,8 +189,7 @@ class MyCog(commands.Cog):
             embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
 
-
-#---------------------------------------------         on_message       -----------------------------------------------------------------
+#----------------------------------------------------------------------
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.guild is not None:
@@ -227,8 +304,6 @@ class MyCog(commands.Cog):
         await self.bot.process_commands(message)
     
 
-
-        
         
 async def setup(bot: commands.Bot) -> None:
-  await bot.add_cog(MyCog(bot))
+  await bot.add_cog(MyCog1(bot))
