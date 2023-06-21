@@ -8,7 +8,7 @@ import langid
 from core.tts import tts_audio
 from core.whisper import transcribe_audio
 import os
-
+import openpyxl
 
 language_dict = {}
 chat = ChatBard()
@@ -16,8 +16,13 @@ chat = ChatBard()
 def detect_language(text):
     langid_result = langid.classify(text)
     excluded_languages = ["fa", "ug"]
+    excluded_languages1 = ["pt"]
+
     if langid_result[0] in excluded_languages:
         return "ar"  # Set the language to Arabic instead
+    
+    elif langid_result[0] in excluded_languages1:
+        return "en" 
     else:
         return langid_result[0]
 
@@ -60,9 +65,9 @@ class MyCog1(commands.Cog):
         
         try:    
             guild = interaction.guild   
-            print(f"Guild: {guild.name},   username: {user_name}\n-----------------------------")
+            print(f"Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
         except Exception as e:
-            print(f"username: {user_name}\n-----------------------------")
+            print(f"username: {user_name}      {new_language}\n-----------------------------")
 
 
     @commands.command(name='ask', help='Ask me a question.')
@@ -102,9 +107,9 @@ class MyCog1(commands.Cog):
 
         try:
             guild = ctx.guild
-            print(f"!ask** Guild: {guild.name},   username: {user_name}\n-----------------------------")
+            print(f"!ask** Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
         except Exception as e:
-            print(f"!ask** username: {user_name}\n-----------------------------")
+            print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
 
     
 #----------------------------------------------------------------------
@@ -192,12 +197,17 @@ class MyCog1(commands.Cog):
 #----------------------------------------------------------------------
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.guild is not None:
-            return  # Ignore messages in guilds
+
         if message.author == self.bot.user:
          return  # Ignore messages sent by the bot itself
+        sheet_path = os.path.join("core", "guild.xlsx")
+        wb = openpyxl.load_workbook(sheet_path)
+        sheet = wb['Sheet1']
+        channel_list = [str(cell.value) for cell in sheet['B'] if cell.value]
+        if isinstance(message.channel, discord.DMChannel) or str(message.channel.id) not in channel_list:
+            return  # Exit if the guild is not in the channel_list
 
-        if isinstance(message.channel, discord.DMChannel) and message.author != self.bot.user:
+        if isinstance(message.channel, discord.DMChannel) or str(message.channel.id) in channel_list:
             if len(message.attachments) > 0:
                 for attachment in message.attachments:
                     if attachment.content_type.startswith('audio'):
@@ -259,7 +269,7 @@ class MyCog1(commands.Cog):
                             embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                             await message.channel.send(embed=embed)
 
-            else:
+            else :
                 user_id = message.author.id
                 user_name = message.author.name
                 pass_question = f"**{user_name}**: {message.content}"
@@ -297,9 +307,9 @@ class MyCog1(commands.Cog):
 
             try:
                 guild = message.guild
-                print(f"!ask** Guild: {guild.name},   username: {user_name}\n-----------------------------")
+                print(f"!ask** Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
             except Exception as e:
-                print(f"!ask** username: {user_name}\n-----------------------------")
+                print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
 
         await self.bot.process_commands(message)
     
