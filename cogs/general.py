@@ -16,7 +16,7 @@ class MyCog(commands.Cog):
         guild = str(interaction.guild.id)  # Convert to string
         await interaction.response.defer(thinking=True)
 
-        if not interaction.user.guild_permissions.administrator:
+        if not interaction.user.guild_permissions.manage_channels:
             embed = discord.Embed(
                 title="Invalid user",
                 description="This command requires the ``Administrator`` permission",
@@ -53,6 +53,7 @@ class MyCog(commands.Cog):
                 )
                 embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
+                print(f"************************************************\n guild {interaction.guild.name} has been updated\n **************************************")
                 wb.save(sheet_path)
                 return
             
@@ -94,6 +95,7 @@ class MyCog(commands.Cog):
             )
             embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
+            print(f"************************************************\n guild {interaction.guild.name} has been set\n **************************************")
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(MyCog(bot))

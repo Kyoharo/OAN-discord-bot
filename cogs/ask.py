@@ -15,7 +15,7 @@ chat = ChatBard()
 
 def detect_language(text):
     langid_result = langid.classify(text)
-    excluded_languages = ["fa", "ug"]
+    excluded_languages = ["fa", "ug","ps"]
     excluded_languages1 = ["pt"]
 
     if langid_result[0] in excluded_languages:
@@ -197,122 +197,124 @@ class MyCog1(commands.Cog):
 #----------------------------------------------------------------------
     @commands.Cog.listener()
     async def on_message(self, message):
-
         if message.author == self.bot.user:
-         return  # Ignore messages sent by the bot itself
+            return  # Ignore messages sent by the bot itself
+
         sheet_path = os.path.join("core", "guild.xlsx")
         wb = openpyxl.load_workbook(sheet_path)
         sheet = wb['Sheet1']
         channel_list = [str(cell.value) for cell in sheet['B'] if cell.value]
-        if isinstance(message.channel, discord.DMChannel) or str(message.channel.id) not in channel_list:
-            return  # Exit if the guild is not in the channel_list
 
-        if isinstance(message.channel, discord.DMChannel) or str(message.channel.id) in channel_list:
-            if len(message.attachments) > 0:
-                for attachment in message.attachments:
-                    if attachment.content_type.startswith('audio'):
-                        user_name = message.author.name
-                        user_id = str(message.author.id)
-                        DOWNLOAD_DIR = os.path.join("audio_files", user_id)
+        if str(message.channel.id) not in channel_list and not isinstance(message.channel, discord.DMChannel):
+            return  # Exit if the guild is not in the channel_list and not a DM with the bot
 
-                        if not os.path.exists(DOWNLOAD_DIR):
-                            os.makedirs(DOWNLOAD_DIR)
 
-                        filename = os.path.join(DOWNLOAD_DIR, attachment.filename)
-                        await attachment.save(filename)
+        if len(message.attachments) > 0:
+            for attachment in message.attachments:
+                if attachment.content_type.startswith('audio'):
+                    user_name = message.author.name
+                    user_id = str(message.author.id)
+                    DOWNLOAD_DIR = os.path.join("audio_files", user_id)
 
-                        your_question, language = transcribe_audio(filename)
-                        pass_question = f"**{user_name}**: {your_question}"
-                        # Detect the language
-                        if int(user_id) in language_dict and language != language_dict[int(user_id)]:
-                            response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language, reset="reset")
-                        else:
-                            response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
-                        language_dict[int(user_id)] = language
+                    if not os.path.exists(DOWNLOAD_DIR):
+                        os.makedirs(DOWNLOAD_DIR)
 
-                        # Convert the response to speech
-                        if "en" in language or "ja" in language and len(response) < 2000:
-                            output_path = f"audio_files/{user_id}/output.wav"
-                            tts_audio(response, output_path, language)
-                            if os.path.exists(output_path):
-                                your_question = your_question[:230]
-                                embed = discord.Embed(title=f""">   ``{your_question}``""",
-                                                      description=f"{response}",
-                                                      color=discord.Color.dark_gold())
-                                embed.set_author(name="OAN",
-                                                 icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                                embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                    filename = os.path.join(DOWNLOAD_DIR, attachment.filename)
+                    await attachment.save(filename)
 
-                                await message.channel.send(embed=embed, file=discord.File(output_path, filename="output.wav"))
-                                return
+                    your_question, language = transcribe_audio(filename)
+                    pass_question = f"**{user_name}**: {your_question}"
 
-                        embeds = []
-                        if len(response) > 2000:
-                            texts = [response[i:i + 2000] for i in range(0, len(response), 2000)]
-                            for text in texts:
-                                your_question = your_question[:230]
-                                embed = discord.Embed(title=f""">   ``{your_question}``""",
-                                                      description=f"{text}",
-                                                      color=discord.Color.dark_gold())
-                                embed.set_author(name="OAN",
-                                                 icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                                embeds.append(embed)
-                            view = PageView(embeds)
-                            await message.channel.send(embed=view.initial(), view=view)
-                        else:
+                    if int(user_id) in language_dict and language != language_dict[int(user_id)]:
+                        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language, reset="reset")
+                    else:
+                        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+                    language_dict[int(user_id)] = language
+
+                    if "en" in language or "ja" in language and len(response) < 2000:
+                        output_path = f"audio_files/{user_id}/output.wav"
+                        tts_audio(response, output_path, language)
+
+                        if os.path.exists(output_path):
                             your_question = your_question[:230]
                             embed = discord.Embed(title=f""">   ``{your_question}``""",
-                                                  description=f"{response}",
-                                                  color=discord.Color.dark_gold())
+                                                description=f"{response}",
+                                                color=discord.Color.dark_gold())
                             embed.set_author(name="OAN",
-                                             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                                            icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                             embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
-                            await message.channel.send(embed=embed)
 
-            else :
-                user_id = message.author.id
-                user_name = message.author.name
-                pass_question = f"**{user_name}**: {message.content}"
-                # Detect the language
-                new_language = detect_language(message.content)
-                if user_id in language_dict and new_language != language_dict[user_id]:
-                    response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")
-                else:
-                    response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
-                language_dict[user_id] = new_language
-                embeds = []
-                if len(response) > 2000:
-                    texts = []
-                    for i in range(0, len(response), 2000):
-                        texts.append(response[i:i + 2000])
-                    for text in texts:
-                        your_question = message.content[:230]
+                            await message.reply(embed=embed, file=discord.File(output_path, filename="output.wav"))
+                            return
+
+                    embeds = []
+                    if len(response) > 2000:
+                        texts = [response[i:i + 2000] for i in range(0, len(response), 2000)]
+                        for text in texts:
+                            your_question = your_question[:230]
+                            embed = discord.Embed(title=f""">   ``{your_question}``""",
+                                                description=f"{text}",
+                                                color=discord.Color.dark_gold())
+                            embed.set_author(name="OAN",
+                                            icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                            embeds.append(embed)
+                        view = PageView(embeds)
+                        await message.reply(embed=view.initial(), view=view)
+                    else:
+                        your_question = your_question[:230]
                         embed = discord.Embed(title=f""">   ``{your_question}``""",
-                                              description=f"{text}",
-                                              color=discord.Color.dark_gold())
+                                            description=f"{response}",
+                                            color=discord.Color.dark_gold())
                         embed.set_author(name="OAN",
-                                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                        embeds.append(embed)
-                    view = PageView(embeds)
-                    await message.reply(embed=view.initial(), view=view)
-                else:
+                                        icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                        embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                        await message.reply(embed=embed)
+
+        else:
+            user_id = message.author.id
+            user_name = message.author.name
+            pass_question = f"**{user_name}**: {message.content}"
+            new_language = detect_language(message.content)
+
+            if user_id in language_dict and new_language != language_dict[user_id]:
+                response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")
+            else:
+                response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+            language_dict[user_id] = new_language
+            embeds = []
+
+            if len(response) > 2000:
+                texts = []
+                for i in range(0, len(response), 2000):
+                    texts.append(response[i:i + 2000])
+                for text in texts:
                     your_question = message.content[:230]
                     embed = discord.Embed(title=f""">   ``{your_question}``""",
-                                          description=f"{response}",
-                                          color=discord.Color.dark_gold())
+                                        description=f"{text}",
+                                        color=discord.Color.dark_gold())
                     embed.set_author(name="OAN",
-                                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                    embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
-                    await message.reply(embed=embed)
+                                    icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                    embeds.append(embed)
+                view = PageView(embeds)
+                await message.reply(embed=view.initial(), view=view)
+            else:
+                your_question = message.content[:230]
+                embed = discord.Embed(title=f""">   ``{your_question}``""",
+                                    description=f"{response}",
+                                    color=discord.Color.dark_gold())
+                embed.set_author(name="OAN",
+                                icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                await message.reply(embed=embed)
 
-            try:
-                guild = message.guild
-                print(f"!ask** Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
-            except Exception as e:
-                print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
+        try:
+            guild = message.guild
+            print(f"!ask** Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+        except Exception as e:
+            print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
 
         await self.bot.process_commands(message)
-    
+
 
         
 async def setup(bot: commands.Bot) -> None:
