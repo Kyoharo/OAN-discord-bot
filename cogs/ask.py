@@ -309,9 +309,9 @@ class MyCog1(commands.Cog):
 
         try:
             guild = message.guild
-            print(f"!ask** Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+            print(f"______ Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
         except Exception as e:
-            print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
+            print(f"_____ username: {user_name}      {new_language}\n-----------------------------")
 
         await self.bot.process_commands(message)
 

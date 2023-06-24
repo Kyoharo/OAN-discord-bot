@@ -95,7 +95,10 @@ class MyCog(commands.Cog):
             )
             embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
-            print(f"************************************************\n guild {interaction.guild.name} has been set\n **************************************")
+            try:
+                print(f"************************************************\n guild {interaction.guild.name} has been set\n **************************************")
+            except Exception as e:
+                print(f"************************************************\n  {interaction.user.name} has been try to use setchannel\n **************************************")
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(MyCog(bot))

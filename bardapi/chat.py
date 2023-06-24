@@ -3,6 +3,8 @@ from bardapi import Bard
 from bardapi.constants import SEPARATOR_LINE, SESSION_HEADERS
 import os 
 from time import sleep
+from dotenv import load_dotenv
+load_dotenv()
 
  
 class ChatBard:
@@ -13,7 +15,7 @@ class ChatBard:
 
 
     def initialize_bard(self, language=None):
-        token = "WwjZpQ6HoOzq6-Xrk8M0TNN1Bmsb6QO3xvuzSWTG7h0BqCeQ-Ol742SJFPIIqRYpNGRHyA."
+        token = os.getenv('BARD_TOKEN')
 
         if language is None:
             self.language = os.getenv("_BARD_API_LANG", default="english")
