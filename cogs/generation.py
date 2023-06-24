@@ -10,30 +10,32 @@ import json
 import io
 
 
-
 def query1(payload):
-    API_URL = "https://api-inference.huggingface.co/models/SG161222/Realistic_Vision_V1.4"
-    headers = {"Authorization": "Bearer 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"}
-    response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content
-
-def query2(payload):
-    API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
-    headers = {"Authorization": "Bearer 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"}
-    response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content
-
-def query3(payload):
     API_URL = "https://api-inference.huggingface.co/models/gsdf/Counterfeit-V2.5"
     headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
     return response.content
 
-def query4(payload):
+def query2(payload):
     API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
     headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
     return response.content
+
+
+
+def query3(payload):
+    API_URL = "https://api-inference.huggingface.co/models/SG161222/Realistic_Vision_V1.4"
+    headers = {"Authorization": "Bearer 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"}
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.content
+
+def query4(payload):
+    API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
+    headers = {"Authorization": "Bearer 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"}
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.content
+
 
 
 
@@ -49,6 +51,17 @@ def upload_image(image_bytes):
         print("Image upload failed.")
         return None
 
+def upload_image2(image_bytes):
+    url = "https://postimages.org/api/post"
+    response = requests.post(url, files={"file": image_bytes})
+    data = response.json()
+    if response.status_code == 200 and data["status"] == 200:
+        image_link = data["url"]
+        return image_link
+    else:
+        print("Image upload failed.")
+        return None
+
 def get_image_link(query_text,model):
     if model == 1:
         image_bytes = query1({"inputs": query_text})
@@ -59,6 +72,9 @@ def get_image_link(query_text,model):
     elif model ==4:
         image_bytes = query4({"inputs": query_text})
     image_link = upload_image(image_bytes)
+    if image_link == None:
+        image_link = upload_image2(image_bytes)
+
     return image_link
 
 class Image(commands.Cog):
@@ -88,7 +104,11 @@ class Image(commands.Cog):
             "https://media.discordapp.net/attachments/1085541383563124858/1121957069604532244/Anime_Cry_Sticker_-_Anime_Cry_Sad_-_Discover__Share_GIFs.gif",
             "https://media.discordapp.net/attachments/1085541383563124858/1121957070544060456/16d4b4d9d668fb59.gif",
             "https://media.discordapp.net/attachments/1085541383563124858/1121957071018004500/Loading_Fast_GIF_-_Loading_Fast_-_Discover__Share_GIFs.gif",
-            "https://media.discordapp.net/attachments/1085541383563124858/1121957069604532244/Anime_Cry_Sticker_-_Anime_Cry_Sad_-_Discover__Share_GIFs.gif"
+            "https://media.discordapp.net/attachments/1085541383563124858/1121957069604532244/Anime_Cry_Sticker_-_Anime_Cry_Sad_-_Discover__Share_GIFs.gif",
+            "https://media.discordapp.net/attachments/692123394971533393/1122215837806370940/e5649b4b6914beeb679ff15ea74b7aec.gif",
+            "https://media.discordapp.net/attachments/692123394971533393/1122215838204837898/21740ae095edd3fc474b6d9c14d25a0f.gif",
+            "https://media.discordapp.net/attachments/692123394971533393/1122215838590705805/0078b8dd6501402668ef94bbb99eec83.gif",
+            "https://media.discordapp.net/attachments/692123394971533393/1122215838955618456/4905109f43ae6aad5d3c2fd417d9dde2.gif"
         ]
 
         try:
@@ -101,12 +121,26 @@ class Image(commands.Cog):
             await interaction.followup.send(embed=embed)
             if models.value == 1:
                 response = await asyncio.to_thread(get_image_link, prompt,1)
+                if response == None:
+                    response = await asyncio.to_thread(get_image_link, prompt,3)
+                    print("model3")
             elif models.value == 2:
                 response = await asyncio.to_thread(get_image_link, prompt,2)
+                if response == None:
+                    response = await asyncio.to_thread(get_image_link, prompt,4)
+                    print("model4")
             elif models.value == 3:
                 response = await asyncio.to_thread(get_image_link, prompt,3)
+                if response == None:
+                    response = await asyncio.to_thread(get_image_link, prompt,1)
+                    print("model1")
+
             elif models.value == 4:
                 response = await asyncio.to_thread(get_image_link, prompt,4)
+                if response == None:
+                    response = await asyncio.to_thread(get_image_link, prompt,2)
+                    print("model2")
+
 
 
             prompt = prompt[:230]
@@ -130,3 +164,6 @@ class Image(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Image(bot))
+
+
+

@@ -15,7 +15,7 @@ chat = ChatBard()
 
 def detect_language(text):
     langid_result = langid.classify(text)
-    excluded_languages = ["fa", "ug","ps"]
+    excluded_languages = ["fa", "ug","ps","lv"]
     excluded_languages1 = ["pt"]
 
     if langid_result[0] in excluded_languages:
@@ -310,8 +310,10 @@ class MyCog1(commands.Cog):
         try:
             guild = message.guild
             print(f"______ Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+        except AttributeError as e:
+            print(f"______ name: skip ")
         except Exception as e:
-            print(f"_____ username: {user_name}      {new_language}\n-----------------------------")
+            print(f"_____ username: {message.author.name}      {new_language}\n-----------------------------")
 
         await self.bot.process_commands(message)
 
