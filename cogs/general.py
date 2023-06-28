@@ -16,7 +16,7 @@ class MyCog(commands.Cog):
         guild = str(interaction.guild.id)  # Convert to string
         await interaction.response.defer(thinking=True)
 
-        if not interaction.user.guild_permissions.manage_channels:
+        if not (interaction.user.guild_permissions.administrator or interaction.user.guild_permissions.manage_channels):
             embed = discord.Embed(
                 title="Invalid user",
                 description="This command requires the ``Administrator`` permission",

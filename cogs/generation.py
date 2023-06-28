@@ -8,19 +8,27 @@ import random
 import asyncio
 import json
 import io
-
+import base64
 
 def query1(payload):
     API_URL = "https://api-inference.huggingface.co/models/gsdf/Counterfeit-V2.5"
     headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content
+    if response.status_code == 200:
+        return response.content
+    else:
+        return None
+
 
 def query2(payload):
     API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
     headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content
+    if response.status_code == 200:
+        return response.content
+    else:
+        return None
+
 
 
 
@@ -28,54 +36,85 @@ def query3(payload):
     API_URL = "https://api-inference.huggingface.co/models/SG161222/Realistic_Vision_V1.4"
     headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content
+    if response.status_code == 200:
+        return response.content
+    else:
+        return None
+
 
 def query4(payload):
     API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
     headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
-    return response.content
+    if response.status_code == 200:
+        return response.content
+    else:
+        return None
 
 
 
 
-def upload_image(image_bytes):
-    headers = {"Authorization": "Client-ID YOUR_CLIENT_ID"}
+
+def upload_image(image_content):
+    upload_url = "https://api.imgbb.com/1/upload"
+    encoded_image = base64.b64encode(image_content).decode("utf-8")
+    payload = {
+        "key": "15125cfd3e76996b00941f181a5711b1",
+        "image": encoded_image
+    }
+    response = requests.post(upload_url, payload)
+    json_response = response.json()
+    if json_response["status"] == 200:
+        return json_response["data"]["url"]
+    else:
+        return None
+
+def upload_image2(image_bytes):
+    client_id = "7725fb46bd3966b"
+    headers = {"Authorization": f"Client-ID {client_id}"}
     url = "https://api.imgur.com/3/upload"
     response = requests.post(url, headers=headers, files={"image": image_bytes})
     data = response.json()
     if response.status_code == 200 and data["success"]:
         image_link = data["data"]["link"]
+        print("used upload_image2")
         return image_link
     else:
         print("Image upload failed.")
         return None
 
-def upload_image2(image_bytes):
-    url = "https://postimages.org/api/post"
-    response = requests.post(url, files={"file": image_bytes})
-    data = response.json()
-    if response.status_code == 200 and data["status"] == 200:
-        image_link = data["url"]
-        return image_link
-    else:
-        print("Image upload failed.")
-        return None
-
-def get_image_link(query_text,model):
+def get_image_link(query_text, model):
     if model == 1:
         image_bytes = query1({"inputs": query_text})
-    elif model ==2:
+        if image_bytes == None:
+            image_bytes = query1({"inputs": query_text})
+    elif model == 2:
         image_bytes = query2({"inputs": query_text})
-    elif model ==3:
+        if image_bytes == None:
+            image_bytes = query2({"inputs": query_text})
+    elif model == 3:
         image_bytes = query3({"inputs": query_text})
-    elif model ==4:
+        if image_bytes == None:
+            image_bytes = query3({"inputs": query_text})
+    elif model == 4:
         image_bytes = query4({"inputs": query_text})
+        if image_bytes == None:
+            image_bytes = query4({"inputs": query_text})
+
     image_link = upload_image(image_bytes)
-    if image_link == None:
+    if image_link is None or not image_link.startswith("http"):
         image_link = upload_image2(image_bytes)
 
     return image_link
+
+
+
+
+
+
+
+
+
 
 class Image(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:

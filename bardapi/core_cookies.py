@@ -8,18 +8,17 @@ from deep_translator import GoogleTranslator
 from bardapi.constants import ALLOWED_LANGUAGES, SESSION_HEADERS
 
 
-class Bard:
+class BardCookies:
     """
     Bard class for interacting with the Bard API.
     """
 
     def __init__(
         self,
-        token: str = None,
+        cookie_dict: dict = None,
         timeout: int = 20,
         proxies: dict = None,
         session: requests.Session = None,
-        conversation_id: str = None,
         language: str = None,
         run_code: bool = False,
     ):
@@ -27,27 +26,26 @@ class Bard:
         Initialize the Bard instance.
 
         Args:
-            token (str): Bard API token.
+            cookie_dict (dict): Bard cookies.
             timeout (int): Request timeout in seconds.
             proxies (dict): Proxy configuration for requests.
-            conversation_id: ID to fetch conversational context
             session (requests.Session): Requests session object.
             language (str): Language code for translation (e.g., "en", "ko", "ja").
         """
-        self.token = token or os.getenv("_BARD_API_KEY")
+        self.cookie_dict = cookie_dict
         self.proxies = proxies
         self.timeout = timeout
         self._reqid = int("".join(random.choices(string.digits, k=4)))
         self.conversation_id = ""
         self.response_id = ""
         self.choice_id = ""
-        if conversation_id != None:
-            self.conversation_id = conversation_id
         # Set session
         if session is None:
             self.session = requests.Session()
             self.session.headers = SESSION_HEADERS
-            self.session.cookies.set("__Secure-1PSID", self.token)
+
+            for k, v in self.cookie_dict.items():
+                self.session.cookies.set(k, v)
         else:
             self.session = session
         self.SNlM0e = self._get_snim0e()
@@ -119,31 +117,32 @@ class Bard:
 
         # Gather image links
         images = set()
-        try:
-            if len(resp_json) >= 3:
-                nested_list = resp_json[4][0][4]
-                for img in nested_list:
-                    images.add(img[0][0][0])
-        except (IndexError, TypeError, KeyError):
-            pass
-
-            
+        if len(resp_json) >= 3:
+            if len(resp_json[4][0]) >= 4 and resp_json[4][0][4] is not None:
+                for img in resp_json[4][0][4]:
+                    try:
+                        images.add(img[0][0][0])
+                    except Exception:
+                        pass
         parsed_answer = json.loads(resp_dict)
 
         # Translated by Google Translator (optional)
         if self.language is not None and self.language not in ALLOWED_LANGUAGES:
             translator_to_lang = GoogleTranslator(source="auto", target=self.language)
-            parsed_answer[4][0][1][0] = translator_to_lang.translate(parsed_answer[4][0][1][0])
+            parsed_answer[0][0] = translator_to_lang.translate(parsed_answer[0][0])
+            parsed_answer[4] = [
+                (x[0], translator_to_lang.translate(x[1][0])) for x in parsed_answer[4]
+            ]
 
         # Get code
         try:
-            code = parsed_answer[4][0][1][0].split("```")[1][6:]
+            code = parsed_answer[0][0].split("```")[1][6:]
         except Exception:
             code = None
 
         # Returnd dictionary object
         bard_answer = {
-            "content": parsed_answer[4][0][1][0],
+            "content": parsed_answer[0][0],
             "conversation_id": parsed_answer[1][0],
             "response_id": parsed_answer[1][1],
             "factualityQueries": parsed_answer[3],
@@ -179,10 +178,6 @@ class Bard:
         Raises:
             Exception: If the __Secure-1PSID value is invalid or SNlM0e value is not found in the response.
         """
-        if not self.token or self.token[-1] != ".":
-            raise Exception(
-                "__Secure-1PSID value must end with a single dot. Enter correct __Secure-1PSID value."
-            )
         resp = self.session.get(
             "https://bard.google.com/", timeout=self.timeout, proxies=self.proxies
         )
@@ -220,7 +215,6 @@ class Bard:
                     links.append(item)
         return links
 
-    # You can contribute by implementing a feature that automatically collects cookie values based on the input of the Chrome path.
     # def auth(self): #Idea Contribution
     #     url = 'https://bard.google.com'
     #     driver_path = "/path/to/chromedriver"

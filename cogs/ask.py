@@ -16,7 +16,7 @@ chat = ChatBard()
 def detect_language(text):
     langid_result = langid.classify(text)
     excluded_languages = ["fa", "ug","ps","lv"]
-    excluded_languages1 = ["pt"]
+    excluded_languages1 = ["pt","cs"]
 
     if langid_result[0] in excluded_languages:
         return "ar"  # Set the language to Arabic instead
@@ -197,7 +197,7 @@ class MyCog1(commands.Cog):
 #----------------------------------------------------------------------
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
+        if message.author.bot:
             return  # Ignore messages sent by the bot itself
 
         sheet_path = os.path.join("core", "guild.xlsx")
@@ -311,7 +311,7 @@ class MyCog1(commands.Cog):
             guild = message.guild
             print(f"______ Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
         except AttributeError as e:
-            print(f"______ name: skip ")
+            print(f"______ name: {message.author.name} ")
         except Exception as e:
             print(f"_____ username: {message.author.name}      {new_language}\n-----------------------------")
 
