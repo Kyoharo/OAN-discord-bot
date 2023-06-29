@@ -130,6 +130,18 @@ class Image(commands.Cog):
     async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int]):
         await interaction.response.defer(thinking=True)
         ETA = int(time.time() + 30)
+        remaining_time = ETA - time.time()
+
+        if remaining_time > 50:  # Check if remaining ETA time is more than 50 seconds
+            embed = discord.Embed(
+                title="Invalid",
+                description="Please try again later.",
+                color=discord.Color.purple()
+            )
+            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            return
+        
         loading_images = [
             "https://media.discordapp.net/attachments/1085541383563124858/1121954059759386644/loading9.gif",
             "https://media.discordapp.net/attachments/1085541383563124858/1121954060107530340/loading8.gif",
@@ -173,7 +185,6 @@ class Image(commands.Cog):
                 if response == None:
                     response = await asyncio.to_thread(get_image_link, prompt,1)
                     print("model1")
-
             elif models.value == 4:
                 response = await asyncio.to_thread(get_image_link, prompt,4)
                 if response == None:
@@ -190,8 +201,12 @@ class Image(commands.Cog):
             embed.set_image(url=response)
             embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
             await interaction.edit_original_response(embed=embed)
+
+
+            
         except Exception as e:
             print(e)
+
 
         try:
             print(f" imagine: guild: {interaction.guild.name}   user: {interaction.user.name}\n")

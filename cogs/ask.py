@@ -15,8 +15,8 @@ chat = ChatBard()
 
 def detect_language(text):
     langid_result = langid.classify(text)
-    excluded_languages = ["fa", "ug","ps","lv"]
-    excluded_languages1 = ["pt","cs"]
+    excluded_languages = ["fa", "ug","ps","lv","mr","he","ur"]
+    excluded_languages1 = ["pt","cs","no","ne","ro","de","cy","et","pl"]
 
     if langid_result[0] in excluded_languages:
         return "ar"  # Set the language to Arabic instead
@@ -269,6 +269,41 @@ class MyCog1(commands.Cog):
                                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                         embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                         await message.reply(embed=embed)
+                else:
+                    if attachment.content_type.startswith(('image', 'video', 'gif')):
+                        link = attachment.url
+                        user_id = message.author.id
+                        user_name = message.author.name
+                        pass_question = f"{link}"
+                        new_language = detect_language(link)
+                        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+                        language_dict[user_id] = new_language
+                        embeds = []
+
+                        if len(response) > 2000:
+                            texts = []
+                            for i in range(0, len(response), 2000):
+                                texts.append(response[i:i + 2000])
+                            for text in texts:
+                                your_question = message.content[:230]
+                                embed = discord.Embed(title=f""">   ``{your_question}``""",
+                                                    description=f"{text}",
+                                                    color=discord.Color.dark_gold())
+                                embed.set_author(name="OAN",
+                                                icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                                embeds.append(embed)
+                            view = PageView(embeds)
+                            await message.reply(embed=view.initial(), view=view)
+                        else:
+                            your_question = message.content[:230]
+                            embed = discord.Embed(title=f""">   ``{your_question}``""",
+                                                description=f"{response}",
+                                                color=discord.Color.dark_gold())
+                            embed.set_author(name="OAN",
+                                            icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                            await message.reply(embed=embed)
+    
 
         else:
             user_id = message.author.id
@@ -282,7 +317,6 @@ class MyCog1(commands.Cog):
                 response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
             language_dict[user_id] = new_language
             embeds = []
-
             if len(response) > 2000:
                 texts = []
                 for i in range(0, len(response), 2000):
@@ -311,7 +345,7 @@ class MyCog1(commands.Cog):
             guild = message.guild
             print(f"______ Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
         except AttributeError as e:
-            print(f"______ name: {message.author.name} ")
+            print(f"______ name: {message.author.name}        {new_language}\n----------------------------- ")
         except Exception as e:
             print(f"_____ username: {message.author.name}      {new_language}\n-----------------------------")
 
