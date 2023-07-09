@@ -1,5 +1,5 @@
 
-ALLOWED_LANGUAGES = {"en", "ko", "ja", "english", "korean", "japanese","AR"}
+ALLOWED_LANGUAGES = {"en", "ko", "ja", "english", "korean", "japanese"}
 DEFAULT_LANGUAGE = "en"
 SEPARATOR_LINE = "=" * 36
 USER_PROMPT = "You: " 

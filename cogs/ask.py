@@ -15,8 +15,8 @@ chat = ChatBard()
 
 def detect_language(text):
     langid_result = langid.classify(text)
-    excluded_languages = ["fa", "ug","ps","lv","mr","he","ur"]
-    excluded_languages1 = ["pt","cs","no","ne","ro","de","cy","et","pl"]
+    excluded_languages = ["fa", "ug","ps","lv","mr","he","ur","zh","hr"]
+    excluded_languages1 = ["pt","cs","no","ne","ro","de","cy","et","pl","eo","id","or"]
 
     if langid_result[0] in excluded_languages:
         return "ar"  # Set the language to Arabic instead
@@ -29,6 +29,27 @@ def detect_language(text):
 class MyCog1(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+    @app_commands.command(name="reset_conversation", description="Creates a new chat thread with the OAN")
+    async def reset_conversation(self, interaction: discord.Interaction):
+        user_id = interaction.user.id
+        user_name = interaction.user.name
+        pass_question = f"**{user_name}**: Hello "
+        await interaction.response.defer(thinking=True)
+            # Detect the language
+        new_language =  'en'
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
+        language_dict[user_id] = new_language 
+        embed = discord.Embed(title=f""">   ``reset_conversation``""",  
+                              description="New chat has been open successfully"
+                              ,color=discord.Color.green())
+        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+        embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+        await interaction.followup.send(embed=embed)
+        try:    
+            guild = interaction.guild   
+            print(f"Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+        except Exception as e:
+            print(f"username: {user_name}      {new_language}\n-----------------------------")
 
     @app_commands.command(name="ask", description="Ask me a question.")
     async def ask(self, interaction: discord.Interaction, your_question: str):
@@ -111,6 +132,7 @@ class MyCog1(commands.Cog):
         except Exception as e:
             print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
 
+ 
     
 #----------------------------------------------------------------------
     @app_commands.command(name='voice', description='Communicate with the bot using Record')
