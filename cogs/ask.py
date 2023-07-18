@@ -4,32 +4,34 @@ from discord import app_commands
 from core.pageview import PageView
 from bardapi import ChatBard
 import asyncio
-import langid
 from core.tts import tts_audio
 from core.whisper import transcribe_audio
 import os
 import openpyxl
+from googletrans import Translator
 
 language_dict = {}
 chat = ChatBard()
 
 def detect_language(text):
-    langid_result = langid.classify(text)
-    excluded_languages = ["fa", "ug","ps","lv","mr","he","ur","zh","hr"]
-    excluded_languages1 = ["pt","cs","no","ne","ro","de","cy","et","pl","eo","id","or","lt","mt","xh"]
+    translator = Translator()
+    result = translator.detect(text)
+    detected_language = result.lang
+    excluded_languages = ["fa"]
+    excluded_languages1 = ["pt"]
 
-    if langid_result[0] in excluded_languages:
+    if detected_language in excluded_languages:
         return "ar"  # Set the language to Arabic instead
     
-    elif langid_result[0] in excluded_languages1:
+    elif detected_language in excluded_languages1:
         return "en" 
     else:
-        return langid_result[0]
+        return detected_language
 
 class MyCog1(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-    @app_commands.command(name="reset_conversation", description="Creates a new chat")
+    @app_commands.command(name="reset", description="Creates a new chat")
     async def reset_conversation(self, interaction: discord.Interaction):
         user_id = interaction.user.id
         user_name = interaction.user.name

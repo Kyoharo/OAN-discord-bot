@@ -9,7 +9,7 @@ class MyCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="setchannel", description="To create a channel to be the main channel where users can chat with the chatbot")
+    @app_commands.command(name="channel", description="To create a channel to be the main channel where users can chat with OAN with out commands")
     async def setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         channel_id = str(channel.id)  # Convert to string
         user_name = interaction.user.name
@@ -100,7 +100,7 @@ class MyCog(commands.Cog):
             except Exception as e:
                 print(f"************************************************\n  {interaction.user.name} has been try to use setchannel\n **************************************")
 
-    @app_commands.command(name="bot_info", description="Information about OAN Chatbot")
+    @app_commands.command(name="info", description="Information about OAN Chatbot")
     async def info(self, interaction: discord.Interaction):
         user_name = interaction.user.name
         await interaction.response.defer(thinking=True)
