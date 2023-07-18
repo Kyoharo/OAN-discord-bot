@@ -7,7 +7,8 @@ import requests
 from deep_translator import GoogleTranslator
 from google.cloud import translate_v2 as translate
 from bardapi.constants import ALLOWED_LANGUAGES, SESSION_HEADERS
-
+import base64
+import browser_cookie3
 
 class Bard:
     """
@@ -24,6 +25,7 @@ class Bard:
         google_translator_api_key: str = None,
         language: str = None,
         run_code: bool = False,
+        token_from_browser = False
     ):
         """
         Initialize the Bard instance.
@@ -32,11 +34,17 @@ class Bard:
             token (str): Bard API token.
             timeout (int): Request timeout in seconds.
             proxies (dict): Proxy configuration for requests.
-            conversation_id: ID to fetch conversational context
             session (requests.Session): Requests session object.
+            conversation_id: ID to fetch conversational context
+            google_translator_api_key (str): Google cloud translation API key.
             language (str): Language code for translation (e.g., "en", "ko", "ja").
+            run_code (bool): Whether to directly execute the code included in the answer (Python only)
         """
         self.token = token or os.getenv("_BARD_API_KEY")
+        if not self.token and token_from_browser:
+            self.token = self._extract_bard_cookie()
+            if not self.token:
+                raise Exception("\nCan't extract cookie from browsers.\nPlease sign in first at\nhttps://accounts.google.com/v3/signin/identifier?followup=https://bard.google.com/&flowName=GlifWebSignIn&flowEntry=ServiceLogin")
         self.proxies = proxies
         self.timeout = timeout
         self._reqid = int("".join(random.choices(string.digits, k=4)))
@@ -45,7 +53,7 @@ class Bard:
         self.choice_id = ""
         if conversation_id is not None:
             self.conversation_id = conversation_id
-        # Set session
+        # Set session or Get session
         if session is None:
             self.session = requests.Session()
             self.session.headers = SESSION_HEADERS
@@ -79,8 +87,9 @@ class Bard:
                     "factualityQueries": list,
                     "textQuery": str,
                     "choices": list,
-                    "links": list
-                    "imgaes": set
+                    "links": list,
+                    "imgaes": set,
+                    "code": str
                 }
         """
         params = {
@@ -134,7 +143,11 @@ class Bard:
         resp_dict = json.loads(resp.content.splitlines()[3])[0][2]
 
         if not resp_dict:
-            return {"content": f"Response Error: {resp.content}."}
+            return {
+                "content": f"Response Error: {resp.content}. "
+                           f"\nTemporarily unavailable due to traffic or an error in cookie values. "
+                           f"Please double-check the cookie values and verify your network environment."
+            }
         resp_json = json.loads(resp_dict)
 
         # Gather image links (optional)
@@ -178,7 +191,7 @@ class Bard:
                 for x in parsed_answer[4]
             ]
 
-        # Get code
+        # Get code (optional)
         try:
             code = parsed_answer[4][0][1][0].split("```")[1][6:]
         except Exception:
@@ -213,6 +226,111 @@ class Bard:
 
         return bard_answer
 
+    def speech(self, input_text: str, lang="en-US") -> dict:
+        """
+        Get speech audio from Bard API for the given input text.
+
+        Example:
+        >>> token = 'xxxxxxxxxx'
+        >>> bard = Bard(token=token)
+        >>> audio = bard.speech("hello!")
+
+        Args:
+            input_text (str): Input text for the query.
+            lang (str): Input language for the query
+
+        Returns:
+            bytes: audio in bytes format
+            with format of audio/ogg
+        """
+        params = {
+            "bl": "boq_assistant-bard-web-server_20230419.00_p1",
+            "_reqid": str(self._reqid),
+            "rt": "c",
+        }
+
+        input_text_struct = [[["XqA3Ic", json.dumps([None, input_text, lang, None, 2])]]]
+
+        data = {
+            "f.req": json.dumps(input_text_struct),
+            "at": self.SNlM0e,
+        }
+
+        # Get response
+        resp = self.session.post(
+            "https://bard.google.com/_/BardChatUi/data/batchexecute",
+            params=params,
+            data=data,
+            timeout=self.timeout,
+            proxies=self.proxies,
+        )
+
+        # Post-processing of response
+        resp_dict = json.loads(resp.content.splitlines()[3])[0][2]
+        if not resp_dict:
+            return {
+                "content": f"Response Error: {resp.content}. "
+                           f"\nTemporarily unavailable due to traffic or an error in cookie values. "
+                           f"Please double-check the cookie values and verify your network environment."
+            }
+        resp_json = json.loads(resp_dict)
+        audio_b64 = resp_json[0]
+        audio_bytes = base64.b64decode(audio_b64)
+        return audio_bytes
+
+    def share_conversation(self, bard_answer, title: str = ''):
+        """
+        Get Share URL for specifc answer from bard
+
+        Example:
+        >>> token = 'xxxxxxxxxx'
+        >>> bard = Bard(token=token)
+        >>> bard_answer = bard.get_answer("hello!")
+        >>> url = bard.share_conversation(bard_answer, title="Example")
+
+        Args:
+            bard_answer (dict): bard_answer returned from get_answer
+            title (str): Title for URL
+        Returns:
+            string: public URL you can share
+        """
+        conv_id = bard_answer['conversation_id']
+        resp_id = bard_answer['response_id']
+        choice_id = bard_answer['choices'][0]['id']
+        params = {
+            'rpcids': 'fuVx7',
+            'source-path': '/',
+            'bl': 'boq_assistant-bard-web-server_20230713.13_p0',
+            # '_reqid': str(self._reqid),
+            'rt': 'c',
+        }
+        input_data_struct = [
+            [[
+                'fuVx7',
+                json.dumps([[None, [[[conv_id, resp_id], None, None, [[], [], [], choice_id, []]]], [0, title]]]),
+                None,
+                'generic'
+            ]]
+        ]
+
+        data = {
+            "f.req": json.dumps(input_data_struct),
+            "at": self.SNlM0e,
+        }
+
+        resp = self.session.post(
+            'https://bard.google.com/_/BardChatUi/data/batchexecute',
+            params=params,
+            data=data,
+        )
+        # Post-processing of response
+        resp_dict = json.loads(resp.content.splitlines()[3])
+        url_id = json.loads(resp_dict[0][2])[2]
+        url = f'https://g.co/bard/share/{url_id}'
+        # increment request ID
+        self._reqid += 100000
+        return url
+
     def _get_snim0e(self) -> str:
         """
         Get the SNlM0e value from the Bard API response.
@@ -236,7 +354,7 @@ class Bard:
         snim0e = re.search(r"SNlM0e\":\"(.*?)\"", resp.text)
         if not snim0e:
             raise Exception(
-                "SNlM0e value not found in response. Check __Secure-1PSID value."
+                "SNlM0e value not found. Double-check __Secure-1PSID value or pass it as token='xxxxx'."
             )
         return snim0e.group(1)
 
@@ -263,24 +381,33 @@ class Bard:
                     links.append(item)
         return links
 
-    # You can contribute by implementing a feature that automatically collects cookie values based on the input of the Chrome path.
-    # def auth(self): #Idea Contribution
-    #     url = 'https://bard.google.com'
-    #     driver_path = "/path/to/chromedriver"
-    #     options = uc.ChromeOptions()
-    #     options.add_argument("--ignore-certificate-error")
-    #     options.add_argument("--ignore-ssl-errors")
-    #     options.user_data_dir = "path_to _user-data-dir"
-    #     driver = uc.Chrome(options=options)
-    #     driver.get(url)
-    #     cookies = driver.get_cookies()
-    #     # Find the __Secure-1PSID cookie
-    #     for cookie in cookies:
-    #         if cookie['name'] == '__Secure-1PSID':
-    #             print("__Secure-1PSID cookie:")
-    #             print(cookie['value'])
-    #             os.environ['_BARD_API_KEY']=cookie['value']
-    #             break
-    #     else:
-    #         print("No __Secure-1PSID cookie found")
-    #     driver.quit()
+
+    def _extract_bard_cookie(self):
+        """
+        Extract token cookie from browser.
+        Supports all modern web browsers and OS
+
+
+        Returns:
+            str: __Secure-1PSID cookie value
+        """
+
+        # browser_cookie3.load is similar function but it's broken
+        # So here we manually search accross all browsers
+        browsers = [
+            browser_cookie3.chrome, 
+            browser_cookie3.chromium, 
+            browser_cookie3.opera, 
+            browser_cookie3.opera_gx, 
+            browser_cookie3.brave, 
+            browser_cookie3.edge, 
+            browser_cookie3.vivaldi, 
+            browser_cookie3.firefox, 
+            browser_cookie3.librewolf, 
+            browser_cookie3.safari
+        ]
+        for browser_fn in browsers:
+            cj = browser_fn(domain_name='.google.com')
+            for cookie in cj:
+                if cookie.name == '__Secure-1PSID' and cookie.value.endswith('.'):
+                    return cookie.value

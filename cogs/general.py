@@ -100,5 +100,27 @@ class MyCog(commands.Cog):
             except Exception as e:
                 print(f"************************************************\n  {interaction.user.name} has been try to use setchannel\n **************************************")
 
+    @app_commands.command(name="bot_info", description="Information about OAN Chatbot")
+    async def info(self, interaction: discord.Interaction):
+        user_name = interaction.user.name
+        await interaction.response.defer(thinking=True)
+        embed = discord.Embed(
+            title="INFO",
+            description="***OAN Artificial Intelligence Bot coded by Kyoharo <:Dev:1130428491620421652>***\nIntroducing **OAN**, the ultimate Discord bot that does it all! Chat in 100+ languages, share images and links effortlessly, track records, and even draw incredible images from your descriptions. Perfect for support, communication, events, and creativity.\n\n",
+            color=0x6a95a2
+        )
+        embed.set_thumbnail(url="https://media.discordapp.net/attachments/1059135171540029552/1130471478526214194/1688931915684.png?width=451&height=660")
+        embed.add_field(name="OWNER",value="***```                      NAO                        ```***",inline=False)
+        embed.add_field(name="*Discord Server*",value=f'[<:Discord:1130420728404127844>](https://discord.gg/9qEKYTPYBH) [Discord](https://discord.gg/9qEKYTPYBH)')
+        embed.add_field(name="*Instagram*",value=f'[<:instagram:1111801696545427536>](https://www.instagram.com/nao0.vt/) [Instagram](https://www.instagram.com/nao0.vt/)')
+        embed.add_field(name="*Youtube*",value=f'[<:Youtube:751271269936136192>](https://www.youtube.com/@Nao0vt) [Youtube](https://www.youtube.com/@Nao0vt)')
+        embed.add_field(name="*Twitch*",value=f'[<:Twitch:751271226558775377>](https://www.twitch.tv/naovtuberen) [Twitch](https://www.twitch.tv/naovtuberen)')
+        embed.add_field(name="*Tiktok*",value=f'[<:tiktok:1111801698860679279>](https://www.tiktok.com/@nao0.vt) [Tiktok](https://www.tiktok.com/@nao0.vt)')
+        embed.add_field(name="*Twitter*",value=f'[<:twitter:1111801706133606502>](https://twitter.com/Nao0_vt) [Twitter](https://twitter.com/Nao0_vt)')
+        await interaction.followup.send(embed=embed)
+        print(f"Bot_info used by {interaction.user.name}")
+        return
+
+
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(MyCog(bot))

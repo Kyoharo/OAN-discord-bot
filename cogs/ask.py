@@ -16,7 +16,7 @@ chat = ChatBard()
 def detect_language(text):
     langid_result = langid.classify(text)
     excluded_languages = ["fa", "ug","ps","lv","mr","he","ur","zh","hr"]
-    excluded_languages1 = ["pt","cs","no","ne","ro","de","cy","et","pl","eo","id","or"]
+    excluded_languages1 = ["pt","cs","no","ne","ro","de","cy","et","pl","eo","id","or","lt","mt","xh"]
 
     if langid_result[0] in excluded_languages:
         return "ar"  # Set the language to Arabic instead
@@ -29,7 +29,7 @@ def detect_language(text):
 class MyCog1(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-    @app_commands.command(name="reset_conversation", description="Creates a new chat thread with the OAN")
+    @app_commands.command(name="reset_conversation", description="Creates a new chat")
     async def reset_conversation(self, interaction: discord.Interaction):
         user_id = interaction.user.id
         user_name = interaction.user.name
@@ -47,9 +47,9 @@ class MyCog1(commands.Cog):
         await interaction.followup.send(embed=embed)
         try:    
             guild = interaction.guild   
-            print(f"Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+            print(f"Guild: {guild.name},   username: {user_name} has been reset conversation\n-----------------------------")
         except Exception as e:
-            print(f"username: {user_name}      {new_language}\n-----------------------------")
+            print(f"username: {user_name}     has been reset conversation\n-----------------------------")
 
     @app_commands.command(name="ask", description="Ask me a question.")
     async def ask(self, interaction: discord.Interaction, your_question: str):
@@ -66,10 +66,10 @@ class MyCog1(commands.Cog):
         language_dict[user_id] = new_language 
 
         embeds = []
-        if len(response) > 2000:
+        if len(response) > 2500:
             texts = []
-            for i in range(0, len(response), 2000):
-                texts.append(response[i:i+2000])
+            for i in range(0, len(response), 2500):
+                texts.append(response[i:i+2500])
             for text in texts:
                 your_question = your_question[:230]
                 embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
@@ -106,10 +106,10 @@ class MyCog1(commands.Cog):
         language_dict[user_id] = new_language 
 
         embeds = []
-        if len(response) > 2000:
+        if len(response) > 2500:
             texts = []
-            for i in range(0, len(response), 2000):
-                texts.append(response[i:i+2000])
+            for i in range(0, len(response), 2500):
+                texts.append(response[i:i+2500])
             for text in texts:
                 your_question = your_question[:230]
                 embed = discord.Embed(title=f""">   ``{your_question}``""",description=f"{text}",color=discord.Color.dark_gold())
@@ -166,7 +166,7 @@ class MyCog1(commands.Cog):
             response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
         language_dict[int(user_id)] = language 
 
-        if "en" in language or "ja" in language and len(response) < 2000:
+        if "en" in language or "ja" in language and len(response) < 2500:
             your_question = your_question[:230]
             output_path = f"audio_files/{user_id}/output.wav"
             tts_audio(response, output_path, language)
@@ -186,8 +186,8 @@ class MyCog1(commands.Cog):
                 return
 
         embeds = []
-        if len(response) > 2000:
-            texts = [response[i:i + 2000] for i in range(0, len(response), 2000)]
+        if len(response) > 2500:
+            texts = [response[i:i + 2500] for i in range(0, len(response), 2500)]
             for text in texts:
                 your_question = your_question[:230]
                 embed = discord.Embed(
@@ -229,6 +229,9 @@ class MyCog1(commands.Cog):
 
         if str(message.channel.id) not in channel_list and not isinstance(message.channel, discord.DMChannel):
             return  # Exit if the guild is not in the channel_list and not a DM with the bot
+        
+        if message.content.startswith(":") or message.content.startswith("<"):
+            return  # Exit if the message start with ":"
 
 
         if len(message.attachments) > 0:
@@ -253,7 +256,7 @@ class MyCog1(commands.Cog):
                         response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
                     language_dict[int(user_id)] = language
 
-                    if "en" in language or "ja" in language and len(response) < 2000:
+                    if "en" in language or "ja" in language and len(response) < 2500:
                         output_path = f"audio_files/{user_id}/output.wav"
                         tts_audio(response, output_path, language)
 
@@ -270,8 +273,8 @@ class MyCog1(commands.Cog):
                             return
 
                     embeds = []
-                    if len(response) > 2000:
-                        texts = [response[i:i + 2000] for i in range(0, len(response), 2000)]
+                    if len(response) > 2500:
+                        texts = [response[i:i + 2500] for i in range(0, len(response), 2500)]
                         for text in texts:
                             your_question = your_question[:230]
                             embed = discord.Embed(title=f""">   ``{your_question}``""",
@@ -293,6 +296,7 @@ class MyCog1(commands.Cog):
                         await message.reply(embed=embed)
                 else:
                     if attachment.content_type.startswith(('image', 'video', 'gif')):
+                        return
                         link = attachment.url
                         user_id = message.author.id
                         user_name = message.author.name
@@ -302,10 +306,10 @@ class MyCog1(commands.Cog):
                         language_dict[user_id] = new_language
                         embeds = []
 
-                        if len(response) > 2000:
+                        if len(response) > 2500:
                             texts = []
-                            for i in range(0, len(response), 2000):
-                                texts.append(response[i:i + 2000])
+                            for i in range(0, len(response), 2500):
+                                texts.append(response[i:i + 2500])
                             for text in texts:
                                 your_question = message.content[:230]
                                 embed = discord.Embed(title=f""">   ``{your_question}``""",
@@ -339,10 +343,10 @@ class MyCog1(commands.Cog):
                 response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
             language_dict[user_id] = new_language
             embeds = []
-            if len(response) > 2000:
+            if len(response) > 2500:
                 texts = []
-                for i in range(0, len(response), 2000):
-                    texts.append(response[i:i + 2000])
+                for i in range(0, len(response), 2500):
+                    texts.append(response[i:i + 2500])
                 for text in texts:
                     your_question = message.content[:230]
                     embed = discord.Embed(title=f""">   ``{your_question}``""",

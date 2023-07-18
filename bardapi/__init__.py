@@ -1,5 +1,3 @@
-# Copyright 2023 parkminwoo, MIT License
-
 import os
 from bardapi.core import Bard
 from bardapi.chat import ChatBard
