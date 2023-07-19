@@ -118,9 +118,149 @@ class MyCog(commands.Cog):
         embed.add_field(name="*Tiktok*",value=f'[<:tiktok:1111801698860679279>](https://www.tiktok.com/@nao0.vt) [Tiktok](https://www.tiktok.com/@nao0.vt)')
         embed.add_field(name="*Twitter*",value=f'[<:twitter:1111801706133606502>](https://twitter.com/Nao0_vt) [Twitter](https://twitter.com/Nao0_vt)')
         await interaction.followup.send(embed=embed)
-        print(f"Bot_info used by {interaction.user.name}")
+        print(f"Bot_info used by  {interaction.user.name}")
         return
+    
+#------------------------------------------------------------------------------------------------------------------
+    @app_commands.command(name="help", description="Get the list of available commands")
+    @app_commands.choices(command_name=[
+    app_commands.Choice(name='Ask', value=1),
+    app_commands.Choice(name='Reset', value=2),
+    app_commands.Choice(name='Voice', value=3),
+    app_commands.Choice(name='Imagine', value=4),
+    app_commands.Choice(name='Channel', value=5),
+    app_commands.Choice(name='Info', value=6),
+    ])
 
+    async def help(self, interaction: discord.Interaction, command_name: app_commands.Choice[int]=None):
+        await interaction.response.defer(thinking=True)
+    
+        if command_name == None:
+            embed = discord.Embed(
+                color=0x6a95a2
+            )
+            
+            
+            embed.set_author(name ="OAN Plugins Commands" , icon_url="https://media.discordapp.net/attachments/1059135171540029552/1130471478526214194/1688931915684.png")
+            embed.set_thumbnail(url="https://media.discordapp.net/attachments/1059135171540029552/1130471478526214194/1688931915684.png")
+            embed.add_field(name="**Ask**",value=f'</help:1130896856256352347> Ask')
+            embed.add_field(name="**Voice**",value=f'</help:1130896856256352347> Voice')
+            embed.add_field(name="**Reset**",value=f'</help:1130896856256352347> Reset')
+            embed.add_field(name="**Imagine**",value=f'</help:1130896856256352347> Imagine')
+            embed.add_field(name="**Channel**",value=f'</help:1130896856256352347> Channel')
+            embed.add_field(name="**Info**",value=f'</help:1130896856256352347> Info')
+            await interaction.followup.send(embed=embed)
+            print(f"Bot **Help** used by {interaction.user.name}")
+            return
+    
+        if command_name.value == 1: #Ask
+            embed = discord.Embed(title="**Ask OAN**",
+                                  description=f"""</ask:1120659235026518108> ``[prompt]``\n!ask ``[prompt]``
+I can generate text, and answer your questions in an informative way.\n
+**Here are some specific examples of what I can do:**
+```
+- I can write poems, stories, scripts, musical pieces.
+- I can translate languages.
+- I can answer your questions in an informative way.
+- I can summarize websites and articles.
+- I can write code in variety of programming languages
+- I can provide images, respond to voice, and return voice. 
+``` """,
+            color=0x6a95a2
+                                )
+            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            print(f"help **Ask** used by {interaction.user.name}")
+            return
+        
+        if command_name.value == 2: #Reset
+            embed = discord.Embed(
+            title="**Reset**",
+            description=f"""</reset:1130847355537739920>
+```
+Starts a new chat session with OAN chatbot.
+```
+""",
+            color=0x6a95a2)
+
+            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            print(f"help **Reset** used by {interaction.user.name}")
+            return
+        
+        if command_name.value == 3: #Voice
+            embed = discord.Embed(
+            title="**Voice**",
+            description="""</voice:1121508357749084321> ``[attached]``
+```
+Initiates a voice chat session and responds to an attached voice recording with a recorded voice message.
+```     
+""",
+            color=0x6a95a2)
+            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            print(f"help **Voice** used by {interaction.user.name}")
+            return
+
+        if command_name.value == 4: #Imagine
+            embed = discord.Embed(
+            title="**Imagine**",
+            description="""</imagine:1121765413584392192> ``[prompt]`` ``[model]``
+```
+Turn your imagination into stunning visuals with AI.
+```  
+""",
+            color=0x6a95a2)
+            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            print(f"help **Imagine** used by {interaction.user.name}")
+            return
+        if command_name.value == 5: #Channel
+            embed = discord.Embed(
+            title="**Set Channel**",
+            description="""</channel:1130847355537739918> ``[choose channel]``
+```
+Create a chat channel for effortless, natural conversations with AI, allowing users to interact through text or voice recordings without the need for explicit commands.
+```  
+""",
+            color=0x6a95a2)
+            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            print(f"help **Channel** used by  {interaction.user.name}")
+            return
+        if command_name.value == 6: #Info
+            embed = discord.Embed(
+            title="**Info**",
+            description="""</info:1130847355537739919>
+```
+This command provides comprehensive information about the bot. It includes details about the bot's purpose, functionality, and any notable features. Additionally, it displays information about the bot's owner, developer, and the main server where it operates.
+```
+""",
+        
+            color=0x6a95a2)
+            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            print(f"help **Info** used by {interaction.user.name}")
+            return
+#-----------------------------------------------------------------------------------------
+    @commands.command(name='help', help='help commands')
+    async def c_help(self, ctx):
+            embed = discord.Embed(
+                color=0x6a95a2
+            )
+            embed.set_author(name ="OAN Plugins Commands" , icon_url="https://media.discordapp.net/attachments/1059135171540029552/1130471478526214194/1688931915684.png")
+            embed.set_thumbnail(url="https://media.discordapp.net/attachments/1059135171540029552/1130471478526214194/1688931915684.png")
+            embed.add_field(name="**Ask**",value=f'</help:1130896856256352347> Ask')
+            embed.add_field(name="**Voice**",value=f'</help:1130896856256352347> Voice')
+            embed.add_field(name="**Reset**",value=f'</help:1130896856256352347> Reset')
+            embed.add_field(name="**Imagine**",value=f'</help:1130896856256352347> Imagine')
+            embed.add_field(name="**Channel**",value=f'</help:1130896856256352347> Channel')
+            embed.add_field(name="**Info**",value=f'</help:1130896856256352347> Info')
+            await ctx.reply(embed=embed)
+            user_name = ctx.author.name
+            print(f"Bot **Help** used by {user_name}")
+            return
+    
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(MyCog(bot))

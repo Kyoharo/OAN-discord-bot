@@ -127,20 +127,8 @@ class Image(commands.Cog):
     app_commands.Choice(name='Model3', value=3),
     app_commands.Choice(name='Model4', value=4),
     ])
-    async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int]):
+    async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int] = None):
         await interaction.response.defer(thinking=True)
-        ETA = int(time.time() + 30)
-        remaining_time = ETA - time.time()
-
-        if remaining_time > 50:  # Check if remaining ETA time is more than 50 seconds
-            embed = discord.Embed(
-                title="Invalid",
-                description="Please try again later.",
-                color=discord.Color.purple()
-            )
-            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
-            await interaction.followup.send(embed=embed)
-            return
         
         loading_images = [
             "https://media.discordapp.net/attachments/1085541383563124858/1121954059759386644/loading9.gif",
@@ -163,14 +151,20 @@ class Image(commands.Cog):
         ]
 
         try:
-            embed = discord.Embed(
-            title=f"Loading...! Generating image... ETA: <t:{ETA}:R>")
+
+            embed = discord.Embed()
             embed.set_author(name="OAN",
             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
             embed.set_image(url=random.choice(loading_images))
-            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            embed.set_footer(text=f"Loading...! Generating image...", icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
-            if models.value == 1:
+
+            if models == None:
+                response = await asyncio.to_thread(get_image_link, prompt,1)
+                if response == None:
+                    response = await asyncio.to_thread(get_image_link, prompt,3)
+                    print("model3")
+            elif models.value == 1:
                 response = await asyncio.to_thread(get_image_link, prompt,1)
                 if response == None:
                     response = await asyncio.to_thread(get_image_link, prompt,3)
@@ -195,7 +189,7 @@ class Image(commands.Cog):
 
             prompt = prompt[:230]
             embed = discord.Embed(
-                title=prompt)
+                description=f'**[{prompt}]({response})**')
             embed.set_author(name="OAN",
             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
             embed.set_image(url=response)
