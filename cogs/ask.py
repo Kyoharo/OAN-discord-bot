@@ -17,7 +17,7 @@ def detect_language(text):
     translator = Translator()
     result = translator.detect(text)
     detected_language = result.lang
-    excluded_languages = ["fa"]
+    excluded_languages = ["fa","sd"]
     excluded_languages1 = ["pt"]
 
     if detected_language in excluded_languages:
@@ -232,7 +232,7 @@ class MyCog1(commands.Cog):
         if str(message.channel.id) not in channel_list and not isinstance(message.channel, discord.DMChannel):
             return  # Exit if the guild is not in the channel_list and not a DM with the bot
         
-        if message.content.startswith(":") or message.content.startswith("<"):
+        if message.content.startswith(":") or message.content.startswith("<") or message.content.startswith("!"):
             return  # Exit if the message start with ":"
 
 

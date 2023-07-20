@@ -19,7 +19,6 @@ def query1(payload):
     else:
         return None
 
-
 def query2(payload):
     API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
     headers = {"Authorization": "Bearer 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"}
@@ -43,7 +42,7 @@ def query3(payload):
 
 
 def query4(payload):
-    API_URL = "https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5"
+    API_URL = "https://api-inference.huggingface.co/models/stablediffusionapi/anything-v5"
     headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
