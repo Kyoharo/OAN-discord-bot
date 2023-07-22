@@ -209,6 +209,7 @@ class Image(commands.Cog):
 
 
 
+
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Image(bot))
 

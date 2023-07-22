@@ -29,7 +29,7 @@ class ChatBard:
             token=token, session=session, timeout=timeout, language=language
         )
 
-    def start(self, user_id,question,language=None,reset=None):
+    def start(self, user_id,question=None,language=None,reset=None, image = None):
         if language != None and reset != None:
             try :
                 del self.sessions[user_id]  # Delete user ID from sessions
@@ -45,10 +45,19 @@ class ChatBard:
         else:
             self.bard = self.sessions[user_id]
             print("Using existing session")
-
-        user_input = question.lower()
         
-        response = self.bard.get_answer(user_input)
+
+        if image != None:
+            if question == None:
+                user_input = "What is in the image?"
+            else:
+                user_input = question.lower()
+            image = open(image, 'rb').read()
+            response = self.bard.ask_about_image(user_input, image)   
+        else:
+            user_input = question.lower()
+            response = self.bard.get_answer(user_input)   
+
 
         if response["images"]:
             images_text = '  \n  • '.join([f'[Click Here]({image})' for image in response['images']])

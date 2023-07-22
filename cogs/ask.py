@@ -61,10 +61,7 @@ class MyCog1(commands.Cog):
         await interaction.response.defer(thinking=True)
             # Detect the language
         new_language =  detect_language(your_question)
-        if user_id in language_dict and new_language != language_dict[user_id]:
-            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
-        else:
-            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
         language_dict[user_id] = new_language 
 
         embeds = []
@@ -101,10 +98,8 @@ class MyCog1(commands.Cog):
         await ctx.defer()
             # Detect the language
         new_language =  detect_language(your_question)
-        if user_id in language_dict and new_language != language_dict[user_id]:
-            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
-        else:
-            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
         language_dict[user_id] = new_language 
 
         embeds = []
@@ -133,9 +128,62 @@ class MyCog1(commands.Cog):
             print(f"!ask** Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
         except Exception as e:
             print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
+#---------------------------------------------------------------------------------------------------------------------
 
- 
-    
+    @app_commands.command(name="ask_about_image", description="Upload image with question using OCR and provides answer based on the image content.")
+    async def ask_about_image(self, interaction: discord.Interaction, image: discord.Attachment, your_question: str = None):
+        await interaction.response.defer(thinking=True)
+        user_name = interaction.user.name
+        user_id = str(interaction.user.id)
+        DOWNLOAD_DIR = os.path.join("image_files", user_id)
+        if not os.path.exists(DOWNLOAD_DIR):
+            os.makedirs(DOWNLOAD_DIR)
+        #error
+        if not image.content_type.startswith('image'):
+            embed = discord.Embed(
+                title="Invalid File",
+                description="Please send a image file.",
+                color=discord.Color.red()
+            )
+            embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            return
+        else:
+            DOWNLOAD_DIR = os.path.join("image_files", user_id)
+
+            if not os.path.exists(DOWNLOAD_DIR):
+                os.makedirs(DOWNLOAD_DIR)
+         
+            filename = os.path.join(DOWNLOAD_DIR, image.filename)
+
+            await image.save(filename)
+            
+            response = await asyncio.to_thread(chat.start, int(user_id),question = your_question,image = filename)
+            embeds = []
+            if your_question == None:
+                your_question  = "What is in the image?"
+            if len(response) > 2500:
+                texts = []
+                for i in range(0, len(response), 2500):
+                    texts.append(response[i:i+2500])
+                for text in texts:
+                    your_question = your_question[:230]
+                    embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
+                    embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                    embeds.append(embed)
+                view = PageView(embeds)
+                await interaction.followup.send(embed=view.initial(), view=view)
+            else:
+                embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+                embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                await interaction.followup.send(embed=embed)
+            
+        try:    
+            guild = interaction.guild   
+            print(f"Guild: {guild.name},   username: {user_name}  used Ask about Image")
+        except Exception as e:
+            print(f"username: {user_name}    used Ask about Image \n-----------------------------")
 #----------------------------------------------------------------------
     @app_commands.command(name='voice', description='Communicate with the bot using Record')
     async def ask_question(self, interaction: discord.Interaction, voice_record: discord.Attachment):
@@ -162,10 +210,8 @@ class MyCog1(commands.Cog):
         your_question, language = transcribe_audio(filename)
         pass_question = f"**{user_name}**: {your_question}"
     # Detect the language
-        if int(user_id) in language_dict and language != language_dict[int(user_id)]:
-            response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language, reset="reset")    
-        else:
-            response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+
+        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
         language_dict[int(user_id)] = language 
 
         if "en" in language or "ja" in language and len(response) < 2500:
@@ -217,6 +263,11 @@ class MyCog1(commands.Cog):
             )
             embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
+        try:    
+            guild = interaction.guild   
+            print(f"Guild: {guild.name},   username: {user_name}  used Voice ")
+        except Exception as e:
+            print(f"username: {user_name}    used Voice \n-----------------------------")
 
 #----------------------------------------------------------------------
     @commands.Cog.listener()
@@ -252,10 +303,7 @@ class MyCog1(commands.Cog):
                     your_question, language = transcribe_audio(filename)
                     pass_question = f"**{user_name}**: {your_question}"
 
-                    if int(user_id) in language_dict and language != language_dict[int(user_id)]:
-                        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language, reset="reset")
-                    else:
-                        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+                    response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
                     language_dict[int(user_id)] = language
 
                     if "en" in language or "ja" in language and len(response) < 2500:
@@ -296,53 +344,62 @@ class MyCog1(commands.Cog):
                                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                         embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                         await message.reply(embed=embed)
-                else:
-                    if attachment.content_type.startswith(('image', 'video', 'gif')):
-                        return
-                        link = attachment.url
-                        user_id = message.author.id
-                        user_name = message.author.name
-                        pass_question = f"{link}"
-                        new_language = detect_language(link)
-                        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
-                        language_dict[user_id] = new_language
-                        embeds = []
+                elif attachment.content_type.startswith(('video', 'gif')):
+                    return
 
-                        if len(response) > 2500:
-                            texts = []
-                            for i in range(0, len(response), 2500):
-                                texts.append(response[i:i + 2500])
-                            for text in texts:
-                                your_question = message.content[:230]
-                                embed = discord.Embed(title=f""">   ``{your_question}``""",
-                                                    description=f"{text}",
-                                                    color=discord.Color.dark_gold())
-                                embed.set_author(name="OAN",
-                                                icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                                embeds.append(embed)
-                            view = PageView(embeds)
-                            await message.reply(embed=view.initial(), view=view)
-                        else:
+                elif attachment.content_type.startswith('image'):
+                    your_question  = "What is in the image?"
+                    user_name = message.author.name
+                    user_id = str(message.author.id)
+                    DOWNLOAD_DIR = os.path.join("image_files", user_id)
+
+                    if not os.path.exists(DOWNLOAD_DIR):
+                        os.makedirs(DOWNLOAD_DIR)
+                    filename = os.path.join(DOWNLOAD_DIR, attachment.filename)
+                    await attachment.save(filename)
+                    
+                    response = await asyncio.to_thread(chat.start, int(user_id), image = filename)
+                    embeds = []
+
+                    if len(response) > 2500:
+                        texts = []
+                        for i in range(0, len(response), 2500):
+                            texts.append(response[i:i + 2500])
+                        for text in texts:
                             your_question = message.content[:230]
                             embed = discord.Embed(title=f""">   ``{your_question}``""",
-                                                description=f"{response}",
+                                                description=f"{text}",
                                                 color=discord.Color.dark_gold())
                             embed.set_author(name="OAN",
                                             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
-                            await message.reply(embed=embed)
-    
+                            embeds.append(embed)
+                        view = PageView(embeds)
+                        await message.reply(embed=view.initial(), view=view)
+                    else:
+                        your_question = message.content[:230]
+                        embed = discord.Embed(title=f""">   ``{your_question}``""",
+                                            description=f"{response}",
+                                            color=discord.Color.dark_gold())
+                        embed.set_author(name="OAN",
+                                        icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                        embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                        await message.reply(embed=embed)
+                    try:
+                        guild = message.guild
+                        print(f"______ Guild: {guild.name},   username: {user_name} used Ask about Image    \n-----------------------------")
+                    except AttributeError as e:
+                        print(f"______ name: {message.author.name}       used Ask about Image \n----------------------------- ")
+                    except Exception as e:
+                        print(f"_____ username: {message.author.name}      used Ask about Image \n-----------------------------")
+                    return
+ 
 
         else:
             user_id = message.author.id
             user_name = message.author.name
             pass_question = f"**{user_name}**: {message.content}"
             new_language = detect_language(message.content)
-
-            if user_id in language_dict and new_language != language_dict[user_id]:
-                response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")
-            else:
-                response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
+            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
             language_dict[user_id] = new_language
             embeds = []
             if len(response) > 2500:
