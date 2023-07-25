@@ -12,7 +12,7 @@ import base64
 
 def query1(payload):
     API_URL = "https://api-inference.huggingface.co/models/gsdf/Counterfeit-V2.5"
-    headers = {"Authorization": "Bearer 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"}
+    headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
         return response.content
@@ -21,7 +21,7 @@ def query1(payload):
 
 def query2(payload):
     API_URL = "https://api-inference.huggingface.co/models/prompthero/openjourney"
-    headers = {"Authorization": "Bearer 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"}
+    headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
         return response.content
@@ -33,7 +33,7 @@ def query2(payload):
 
 def query3(payload):
     API_URL = "https://api-inference.huggingface.co/models/SG161222/Realistic_Vision_V1.4"
-    headers = {"Authorization": "Bearer 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"}
+    headers = {"Authorization": "Bearer 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"}
     response = requests.post(API_URL, headers=headers, json=payload)
     if response.status_code == 200:
         return response.content
@@ -49,7 +49,6 @@ def query4(payload):
         return response.content
     else:
         return None
-
 
 
 
