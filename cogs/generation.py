@@ -86,20 +86,37 @@ def get_image_link(query_text, model):
     if model == 1:
         image_bytes = query1({"inputs": query_text})
         if image_bytes == None:
-            image_bytes = query1({"inputs": query_text})
+            image_bytes = query2({"inputs": query_text})
+            if image_bytes == None:
+                image_bytes = query3({"inputs": query_text})  
+                if image_bytes == None:
+                   image_bytes = query4({"inputs": query_text})    
+
     elif model == 2:
         image_bytes = query2({"inputs": query_text})
         if image_bytes == None:
-            image_bytes = query2({"inputs": query_text})
+            image_bytes = query3({"inputs": query_text})
+            if image_bytes == None:
+                image_bytes = query4({"inputs": query_text})  
+                if image_bytes == None:
+                   image_bytes = query1({"inputs": query_text})  
+
     elif model == 3:
         image_bytes = query3({"inputs": query_text})
         if image_bytes == None:
-            image_bytes = query3({"inputs": query_text})
+            image_bytes = query4({"inputs": query_text})
+            if image_bytes == None:
+                image_bytes = query1({"inputs": query_text})  
+                if image_bytes == None:
+                   image_bytes = query2({"inputs": query_text})  
     elif model == 4:
         image_bytes = query4({"inputs": query_text})
         if image_bytes == None:
-            image_bytes = query4({"inputs": query_text})
-
+            image_bytes = query1({"inputs": query_text})
+            if image_bytes == None:
+                image_bytes = query2({"inputs": query_text})  
+                if image_bytes == None:
+                   image_bytes = query3({"inputs": query_text})  
     image_link = upload_image(image_bytes)
     if image_link is None or not image_link.startswith("http"):
         image_link = upload_image2(image_bytes)

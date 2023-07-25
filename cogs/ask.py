@@ -8,25 +8,25 @@ from core.tts import tts_audio
 from core.whisper import transcribe_audio
 import os
 import openpyxl
-from googletrans import Translator
+# from googletrans import Translator
 
-language_dict = {}
+# language_dict = {}
 chat = ChatBard()
 
-def detect_language(text):
-    translator = Translator()
-    result = translator.detect(text)
-    detected_language = result.lang
-    excluded_languages = ["fa","sd"]
-    excluded_languages1 = ["pt"]
+# def detect_language(text):
+#     translator = Translator()
+#     result = translator.detect(text)
+#     detected_language = result.lang
+#     excluded_languages = ["fa","sd"]
+#     excluded_languages1 = ["pt"]
 
-    if detected_language in excluded_languages:
-        return "ar"  # Set the language to Arabic instead
+#     if detected_language in excluded_languages:
+#         return "ar"  # Set the language to Arabic instead
     
-    elif detected_language in excluded_languages1:
-        return "en" 
-    else:
-        return detected_language
+#     elif detected_language in excluded_languages1:
+#         return "en" 
+#     else:
+#         return detected_language
 
 class MyCog1(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -39,8 +39,8 @@ class MyCog1(commands.Cog):
         await interaction.response.defer(thinking=True)
             # Detect the language
         new_language =  'en'
-        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language, reset="reset")    
-        language_dict[user_id] = new_language 
+        response = await asyncio.to_thread(chat.start, user_id, pass_question, reset="reset")    
+        # language_dict[user_id] = new_language 
         embed = discord.Embed(title=f""">   ``reset_conversation``""",  
                               description="New chat has been open successfully"
                               ,color=discord.Color.green())
@@ -59,10 +59,7 @@ class MyCog1(commands.Cog):
         user_name = interaction.user.name
         pass_question = f"**{user_name}**: {your_question}"
         await interaction.response.defer(thinking=True)
-            # Detect the language
-        new_language =  detect_language(your_question)
-        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
-        language_dict[user_id] = new_language 
+        response = await asyncio.to_thread(chat.start, user_id, pass_question)
 
         embeds = []
         if len(response) > 2500:
@@ -85,9 +82,9 @@ class MyCog1(commands.Cog):
         
         try:    
             guild = interaction.guild   
-            print(f"Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+            print(f"Guild: {guild.name},   username: {user_name}      \n-----------------------------")
         except Exception as e:
-            print(f"username: {user_name}      {new_language}\n-----------------------------")
+            print(f"username: {user_name}      \n-----------------------------")
 
 
     @commands.command(name='ask', help='Ask me a question.')
@@ -97,10 +94,10 @@ class MyCog1(commands.Cog):
         pass_question = f"**{user_name}**: {your_question}"
         await ctx.defer()
             # Detect the language
-        new_language =  detect_language(your_question)
+        # new_language =  detect_language(your_question)
 
-        response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
-        language_dict[user_id] = new_language 
+        response = await asyncio.to_thread(chat.start, user_id, pass_question)
+        # language_dict[user_id] = new_language 
 
         embeds = []
         if len(response) > 2500:
@@ -125,9 +122,9 @@ class MyCog1(commands.Cog):
 
         try:
             guild = ctx.guild
-            print(f"!ask** Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+            print(f"!ask** Guild: {guild.name},   username: {user_name}      \n-----------------------------")
         except Exception as e:
-            print(f"!ask** username: {user_name}      {new_language}\n-----------------------------")
+            print(f"!ask** username: {user_name}      \n-----------------------------")
 #---------------------------------------------------------------------------------------------------------------------
 
     @app_commands.command(name="ask_about_image", description="Upload image with question using OCR and provides answer based on the image content.")
@@ -398,9 +395,9 @@ class MyCog1(commands.Cog):
             user_id = message.author.id
             user_name = message.author.name
             pass_question = f"**{user_name}**: {message.content}"
-            new_language = detect_language(message.content)
-            response = await asyncio.to_thread(chat.start, user_id, pass_question, new_language)
-            language_dict[user_id] = new_language
+            # new_language = detect_language(message.content)
+            response = await asyncio.to_thread(chat.start, user_id, pass_question)
+            # language_dict[user_id] = new_language
             embeds = []
             if len(response) > 2500:
                 texts = []
@@ -428,11 +425,11 @@ class MyCog1(commands.Cog):
 
         try:
             guild = message.guild
-            print(f"______ Guild: {guild.name},   username: {user_name}      {new_language}\n-----------------------------")
+            print(f"______ Guild: {guild.name},   username: {user_name}      \n-----------------------------")
         except AttributeError as e:
-            print(f"______ name: {message.author.name}        {new_language}\n----------------------------- ")
+            print(f"______ name: {message.author.name}        \n----------------------------- ")
         except Exception as e:
-            print(f"_____ username: {message.author.name}      {new_language}\n-----------------------------")
+            print(f"_____ username: {message.author.name}      \n-----------------------------")
 
         await self.bot.process_commands(message)
 
