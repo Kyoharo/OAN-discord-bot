@@ -59,9 +59,12 @@ class ChatBard:
             response = self.bard.get_answer(user_input)   
 
 
-        if response["images"]:
-            images_text = '  \n  • '.join([f'[Click Here]({image})' for image in response['images']])
-            value = f"{response['content']}\n  • {images_text}"
-            return value
-        else:
-            return response['content']
+        content_list = []    
+        content_list.append(response['content'])
+
+        # Check if response['images'] exists and is not empty
+        if response['images']:
+            for image in response['images']:
+                content_list.append(image)
+                
+        return content_list

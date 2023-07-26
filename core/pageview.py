@@ -13,7 +13,7 @@ class PageView(discord.ui.View):
         embed.set_footer(text=f"Pages: {self._current_page}/{self._len}", icon_url=interaction.user.avatar.url)
         await interaction.message.edit(embed=embed)
 
-    @discord.ui.button(emoji='⏮️')
+    @discord.ui.button(emoji='⏮️', label="Previous", custom_id="button-1", style=discord.ButtonStyle.primary)
     async def previous(self, interaction: discord.Interaction, _):
         if self._current_page == 1:
             return
@@ -22,7 +22,7 @@ class PageView(discord.ui.View):
         await interaction.response.edit_message(embed=embed)
         await self.update_buttons(interaction)
 
-    @discord.ui.button(emoji='⏭️')
+    @discord.ui.button(emoji='⏭️',label="Next",custom_id="button-2", style=discord.ButtonStyle.primary)
     async def next(self, interaction: discord.Interaction, _):
         if self._current_page == self._len:
             return
