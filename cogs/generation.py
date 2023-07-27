@@ -142,6 +142,7 @@ class Image(commands.Cog):
     app_commands.Choice(name='Model3', value=3),
     app_commands.Choice(name='Model4', value=4),
     ])
+    @app_commands.guild_only()
     async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int] = None):
         await interaction.response.defer(thinking=True)
         

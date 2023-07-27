@@ -32,6 +32,7 @@ class MyCog1(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
     @app_commands.command(name="reset", description="Creates a new chat")
+    @app_commands.guild_only()
     async def reset_conversation(self, interaction: discord.Interaction):
         user_id = interaction.user.id
         user_name = interaction.user.name
@@ -54,6 +55,7 @@ class MyCog1(commands.Cog):
             print(f"username: {user_name}     has been reset conversation\n-----------------------------")
 
     @app_commands.command(name="ask", description="Ask me a question.")
+    @app_commands.guild_only()
     async def ask(self, interaction: discord.Interaction, your_question: str):
         user_id = interaction.user.id
         user_name = interaction.user.name
@@ -107,6 +109,7 @@ class MyCog1(commands.Cog):
 
 
     @commands.command(name='ask', help='Ask me a question.')
+    @app_commands.guild_only()
     async def ask_cmd(self, ctx, *, your_question):
         user_id = ctx.author.id
         user_name = ctx.author.name
@@ -165,6 +168,7 @@ class MyCog1(commands.Cog):
 #---------------------------------------------------------------------------------------------------------------------
 
     @app_commands.command(name="ask_about_image", description="Upload image with question using OCR and provides answer based on the image content.")
+    @app_commands.guild_only()
     async def ask_about_image(self, interaction: discord.Interaction, image: discord.Attachment, your_question: str = None):
         await interaction.response.defer(thinking=True)
         user_name = interaction.user.name
@@ -191,8 +195,8 @@ class MyCog1(commands.Cog):
             filename = os.path.join(DOWNLOAD_DIR, image.filename)
 
             await image.save(filename)
-            
-            response = await asyncio.to_thread(chat.start, int(user_id),question = your_question,image = filename)
+            user_id = str(user_id) + "0"
+            response = await asyncio.to_thread(chat.start, int(user_id),your_question,image = filename)
             if your_question == None:
                 your_question  = "What is in the image?"
 
@@ -241,6 +245,7 @@ class MyCog1(commands.Cog):
             print(f"username: {user_name}    used Ask about Image \n-----------------------------")
 #----------------------------------------------------------------------
     @app_commands.command(name='voice', description='Communicate with the bot using Record')
+    @app_commands.guild_only()
     async def ask_question(self, interaction: discord.Interaction, voice_record: discord.Attachment):
         user_name = interaction.user.name
         user_id = str(interaction.user.id)
@@ -437,7 +442,7 @@ class MyCog1(commands.Cog):
                         os.makedirs(DOWNLOAD_DIR)
                     filename = os.path.join(DOWNLOAD_DIR, attachment.filename)
                     await attachment.save(filename)
-                    
+                    user_id = str(user_id) + "0"
                     response = await asyncio.to_thread(chat.start, int(user_id), image = filename)
 
                     embeds = []

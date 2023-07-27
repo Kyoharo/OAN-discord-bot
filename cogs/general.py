@@ -10,6 +10,7 @@ class MyCog(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="channel", description="To create a channel to be the main channel where users can chat with OAN with out commands")
+    @app_commands.guild_only()
     async def setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         channel_id = str(channel.id)  # Convert to string
         user_name = interaction.user.name
@@ -123,6 +124,7 @@ class MyCog(commands.Cog):
     
 #------------------------------------------------------------------------------------------------------------------
     @app_commands.command(name="help", description="Get the list of available commands")
+    @app_commands.guild_only()
     @app_commands.choices(command_name=[
     app_commands.Choice(name='Ask', value=1),
     app_commands.Choice(name='Reset', value=2),
@@ -244,6 +246,7 @@ This command provides comprehensive information about the bot. It includes detai
             return
 #-----------------------------------------------------------------------------------------
     @commands.command(name='help', help='help commands')
+    @app_commands.guild_only()
     async def c_help(self, ctx):
             embed = discord.Embed(
                 color=0x6a95a2
