@@ -5,6 +5,7 @@ import os
 from time import sleep
 from dotenv import load_dotenv
 load_dotenv()
+import smtplib
 
 
 
@@ -15,6 +16,26 @@ class ChatBard:
         self.sessions = {}
         self.current_token_index = 1
         self.content_list = []
+
+
+    def send_email(self,body):
+        sender = "abdoataa38@gmail.com"         # sender email
+        receiver = "abdoataa39@gmail.com","abdoataa38@gmail.com"       #receiver emails
+        password = "xvggwyltaajqkbwk"           #sender app password
+        subject = "OAN TOkENS"      # the subject
+        #header                                             #in the message conten the subject and body
+        message = f"""subject: {subject}\n\n    
+{body}
+        """
+
+        server = smtplib.SMTP("smtp.gmail.com", 587)       # server protocol
+        server.ehlo()                                      # to start connecting with the server
+        server.starttls()                                   # start encreption
+        server.login(sender, password)                      #login
+        server.sendmail(sender,receiver, message)           #send the email
+        server.quit()                                       #quit
+
+
     def initialize_bard(self, language=None):
         
         self.tokens =[
@@ -25,7 +46,6 @@ class ChatBard:
             os.getenv('BARD_TOKEN5')
         ]
         self.token = self.tokens[self.current_token_index]
-        print(self.token)
         if language is None:
             self.language = os.getenv("_BARD_API_LANG", default="english")
         timeout = int(os.getenv("_BARD_API_TIMEOUT", default=30))
@@ -84,7 +104,12 @@ class ChatBard:
         except Exception as e:
             print(f"{e}  {self.current_token_index}:")
             if self.current_token_index > len(self.tokens):
-                pass
+                self.send_email( body = "All tokens has been used please reload.\n\nBR\nOAN ")
+                print(f"{self.token} : {self.current_token_index}")
+
+            elif self.current_token_index > 3:
+                self.send_email( body = "Alert!!\n tokens more then 3.\n\nBR\nOAN ")
+                print(f"{self.token} : {self.current_token_index}")
             else:
                 self.current_token_index = self.current_token_index + 1
                 self.token = self.tokens[self.current_token_index]
