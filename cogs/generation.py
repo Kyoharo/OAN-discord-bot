@@ -130,7 +130,6 @@ def get_image_link(query_text, model):
 
 
 
-
 class Image(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -145,7 +144,23 @@ class Image(commands.Cog):
     @app_commands.guild_only()
     async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int] = None):
         await interaction.response.defer(thinking=True)
-        
+        ban_users = ["well3anaar", "kyoharo"]
+
+        if interaction.user.name in ban_users:
+            embed = discord.Embed(
+                title="Invalid user",
+                description="You have been banned from using the imagine command for bad use",
+                color=discord.Color.red()
+            )
+            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            try:
+                print(f" imagine: guild: {interaction.guild.name}   user: {interaction.user.name}   ** {prompt}    -- sended baned from using -- \n")
+            except Exception as e:
+                print(f" imagine: user: {interaction.user.name}\n")
+            return
+
+            
         loading_images = [
             "https://media.discordapp.net/attachments/1085541383563124858/1121954059759386644/loading9.gif",
             "https://media.discordapp.net/attachments/1085541383563124858/1121954060107530340/loading8.gif",
@@ -219,7 +234,7 @@ class Image(commands.Cog):
 
 
         try:
-            print(f" imagine: guild: {interaction.guild.name}   user: {interaction.user.name}\n")
+            print(f" imagine: guild: {interaction.guild.name}   user: {interaction.user.name}   ** {prompt} \n")
         except Exception as e:
             print(f" imagine: user: {interaction.user.name}\n")
 
