@@ -23,7 +23,8 @@ class MyCog(commands.Cog):
                 description="This command requires the ``Administrator`` permission",
                 color=discord.Color.red()
             )
-            embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             return
 
@@ -52,7 +53,8 @@ class MyCog(commands.Cog):
                     description="This channel has been updated in the registration",
                     color=discord.Color.purple()
                 )
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
                 print(f"************************************************\n guild {interaction.guild.name} has been updated\n **************************************")
                 wb.save(sheet_path)
@@ -94,7 +96,8 @@ class MyCog(commands.Cog):
                 description="The channel has been set successfully",
                 color=discord.Color.green()
             )
-            embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             try:
                 print(f"************************************************\n guild {interaction.guild.name} has been set\n **************************************")
@@ -170,7 +173,8 @@ I can generate text, and answer your questions in an informative way.\n
 ``` """,
             color=0x6a95a2
                                 )
-            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             print(f"help **Ask** used by {interaction.user.name}")
             return
@@ -185,7 +189,8 @@ Starts a new chat session with OAN chatbot.
 """,
             color=0x6a95a2)
 
-            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             print(f"help **Reset** used by {interaction.user.name}")
             return
@@ -199,7 +204,8 @@ Initiates a voice chat session and responds to an attached voice recording with 
 ```     
 """,
             color=0x6a95a2)
-            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             print(f"help **Voice** used by {interaction.user.name}")
             return
@@ -213,7 +219,8 @@ Turn your imagination into stunning visuals with AI.
 ```  
 """,
             color=0x6a95a2)
-            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             print(f"help **Imagine** used by {interaction.user.name}")
             return
@@ -226,7 +233,8 @@ Create a chat channel for effortless, natural conversations with AI, allowing us
 ```  
 """,
             color=0x6a95a2)
-            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             print(f"help **Channel** used by  {interaction.user.name}")
             return
@@ -240,7 +248,8 @@ This command provides comprehensive information about the bot. It includes detai
 """,
         
             color=0x6a95a2)
-            embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=interaction.user.name, icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             print(f"help **Info** used by {interaction.user.name}")
             return

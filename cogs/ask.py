@@ -45,8 +45,9 @@ class MyCog1(commands.Cog):
         embed = discord.Embed(title=f""">   ``reset_conversation``""",  
                               description="New chat has been open successfully"
                               ,color=discord.Color.green())
-        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-        embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.pn            if interaction.user.avatar:g")
+        if interaction.user.avatar:    
+            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
         await interaction.followup.send(embed=embed)
         try:    
             guild = interaction.guild   
@@ -83,7 +84,8 @@ class MyCog1(commands.Cog):
                     embed.set_author(name="OAN",
                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                     embed.set_image(url=image)
-                    embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:                
+                        embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
                     embeds.append(embed)
                 else:
                     your_question = your_question[:230]
@@ -98,7 +100,9 @@ class MyCog1(commands.Cog):
             your_question = your_question[:230]
             embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
             embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+
+            if interaction.user.avatar:                
+                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
         
         try:    
@@ -142,7 +146,8 @@ class MyCog1(commands.Cog):
                     embed.set_author(name="OAN",
                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                     embed.set_image(url=image)
-                    embed.set_footer(text=f'{user_name}', icon_url=ctx.author.avatar.url)
+                    if ctx.author.avatar.url:
+                        embed.set_footer(text=f'{user_name}', icon_url=ctx.author.avatar.url)
                     embeds.append(embed)
                 else:
                     your_question = your_question[:230]
@@ -157,7 +162,8 @@ class MyCog1(commands.Cog):
             your_question = your_question[:230]
             embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
             embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-            embed.set_footer(text=f'{user_name}', icon_url=ctx.author.avatar.url)
+            if ctx.author.avatar.url:
+                embed.set_footer(text=f'{user_name}', icon_url=ctx.author.avatar.url)
             await ctx.reply(embed=embed)
 
         try:
@@ -183,7 +189,8 @@ class MyCog1(commands.Cog):
                 description="Please send a image file.",
                 color=discord.Color.red()
             )
-            embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             return
         else:
@@ -220,7 +227,8 @@ class MyCog1(commands.Cog):
                         embed.set_author(name="OAN",
                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                         embed.set_image(url=image)
-                        embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                        if interaction.user.avatar:                
+                            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
                         embeds.append(embed)
                     else:
                         your_question = your_question[:230]
@@ -235,7 +243,8 @@ class MyCog1(commands.Cog):
                 your_question = your_question[:230]
                 embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
                 embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:                
+                    embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
             
         try:    
@@ -263,7 +272,8 @@ class MyCog1(commands.Cog):
                 description="Please send a voice record.",
                 color=discord.Color.red()
             )
-            embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:    
+                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             return
 
@@ -314,7 +324,8 @@ class MyCog1(commands.Cog):
                     embed.set_author(name="OAN",
                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                     embed.set_image(url=image)
-                    embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:                
+                        embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
                     embeds.append(embed)
                 else:
                     your_question = your_question[:230]
@@ -329,7 +340,8 @@ class MyCog1(commands.Cog):
             your_question = your_question[:230]
             embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
             embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:                
+                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
 
         try:    
@@ -411,7 +423,8 @@ class MyCog1(commands.Cog):
                                 embed.set_author(name="OAN",
                                 icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                                 embed.set_image(url=image)
-                                embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                                if message.author.avatar:    
+                                    embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                                 embeds.append(embed)
                             else:
                                 your_question = your_question[:230]
@@ -426,7 +439,8 @@ class MyCog1(commands.Cog):
                         your_question = your_question[:230]
                         embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
                         embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                        embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                        if message.author.avatar:
+                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                         await message.reply(embed=embed)
                         
                 elif attachment.content_type.startswith(('video', 'gif')):
@@ -465,7 +479,8 @@ class MyCog1(commands.Cog):
                                 embed.set_author(name="OAN",
                                 icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                                 embed.set_image(url=image)
-                                embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                                if message.author.avatar:
+                                    embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                                 embeds.append(embed)
                             else:
                                 your_question = your_question[:230]
@@ -480,7 +495,8 @@ class MyCog1(commands.Cog):
                         your_question = your_question[:230]
                         embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
                         embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                        embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                        if message.author.avatar:    
+                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                         await message.reply(embed=embed)
                     try:
                         guild = message.guild
@@ -520,7 +536,8 @@ class MyCog1(commands.Cog):
                         embed.set_author(name="OAN",
                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                         embed.set_image(url=image)
-                        embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                        if message.author.avatar:
+                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                         embeds.append(embed)
                     else:
                         your_question = your_question[:230]

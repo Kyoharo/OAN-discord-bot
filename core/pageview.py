@@ -10,7 +10,8 @@ class PageView(discord.ui.View):
 
     async def update_buttons(self, interaction: discord.Interaction) -> None:
         embed = self._embeds[self._current_page - 1]
-        embed.set_footer(text=f"Pages: {self._current_page}/{self._len}", icon_url=interaction.user.avatar.url)
+        if interaction.user.avatar:
+            embed.set_footer(text=f"Pages: {self._current_page}/{self._len}", icon_url=interaction.user.avatar.url)
         await interaction.message.edit(embed=embed)
 
     @discord.ui.button(emoji='⏮️', label="Previous", custom_id="button-1", style=discord.ButtonStyle.primary)

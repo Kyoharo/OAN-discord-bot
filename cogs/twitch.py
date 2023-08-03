@@ -33,18 +33,34 @@ class TwitchStreamChecker:
             'Authorization': 'Bearer ' + self.access_token
         }
         user_data = requests.get('https://api.twitch.tv/helix/users?login=' + streamer_name, headers=headers).json()
-        return user_data.get('data', None)
+        user_info = user_data.get('data', None)
+        
+        if user_info:
+            user_info = user_info[0]
+            return {
+                'id': user_info['id'],
+                'login': user_info['login'],
+                'display_name': user_info['display_name'],
+                'profile_image_url': user_info['profile_image_url'],
+            }
+        else:
+            return None
 
     def is_streamer_live(self, streamer_name):
         headers = {
             'Client-ID': self.client_id,
             'Authorization': 'Bearer ' + self.access_token
         }
+        
+        user_info = self.is_user_exist(streamer_name)
+        
         stream = requests.get('https://api.twitch.tv/helix/streams?user_login=' + streamer_name, headers=headers)
         stream_data = stream.json()
+        
         if len(stream_data['data']) == 1:
             stream_info = stream_data['data'][0]
             thumbnail_url = stream_info['thumbnail_url'].replace("{width}", "500").replace("{height}", "250")
+            
             return {
                 'is_live': True,
                 'stream_title': stream_info['title'],
@@ -52,12 +68,12 @@ class TwitchStreamChecker:
                 'viewer_count': stream_info['viewer_count'],
                 'thumbnail_url': thumbnail_url,
                 'started_at': stream_info['started_at'],
+                'profile_image_url': user_info['profile_image_url'],
             }
         else:
             return {
                 'is_live': False
             }
-
 
 class twitch_cog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -76,20 +92,18 @@ class twitch_cog(commands.Cog):
             for row in range(2, max_rows): 
                 streamer = str(sheet.cell(row, 1).value)
                 stream_info = self.twitch_checker.is_streamer_live(streamer)
-                new_status = stream_info['is_live']
                 if stream_info['is_live']:
                     status = str(sheet.cell(row, 2).value)
                     if status != "True":
                         channel_id = int(sheet.cell(1, 3).value)
                         message = str(sheet.cell(row, 5).value)
                         text_channel = self.bot.get_channel(channel_id)
-                        link_twitch = f"[{streamer} is now live in Twitch](https://www.twitch.tv/{streamer})"
                         embed = discord.Embed(
                             title=stream_info['stream_title'],  # Use the stream title directly as the title
                             color=0x6a95a2,
                             url=f"https://www.twitch.tv/{streamer}"  # Set the URL for the title hyperlink
                         )
-                        embed.set_author(name=f"{streamer} is now live in Twitch", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458", url=f"https://www.twitch.tv/{streamer}") 
+                        embed.set_author(name=f"[LIVE] {streamer}", icon_url=stream_info['profile_image_url'], url=f"https://www.twitch.tv/{streamer}") 
                                         
                         width = 500
                         height = 250
@@ -98,14 +112,14 @@ class twitch_cog(commands.Cog):
                         embed.set_image(url=thumbnail_url)
                         embed.add_field(name="Game", value=stream_info['game_name'])
                         embed.add_field(name="Viewer Count", value=stream_info['viewer_count'])
-                        started_at_utc = datetime.strptime(stream_info['started_at'], "%Y-%m-%dT%H:%M:%SZ")
+                        # started_at_utc = datetime.strptime(stream_info['started_at'], "%Y-%m-%dT%H:%M:%SZ")
                         #add button
                         view = discord.ui.View()
-                        button = discord.ui.Button(label="Watch Stream",url=f"https://www.twitch.tv/{streamer}")
+                        button = discord.ui.Button(emoji="<:Twitch:1136322224018694195>]",label=f" Twitch.com/{streamer}",url=f"https://www.twitch.tv/{streamer}")
                         view.add_item(button)
                         # Convert to the desired format
-                        started_at_local = started_at_utc.strftime("%-d/%-m/%Y %-I:%M %p")
-                        embed.set_footer(text=f"OAN • {started_at_local}")
+                        # started_at_local = started_at_utc.strftime("%-d/%-m/%Y %-I:%M %p")
+                        embed.set_footer(text=f"OAN")
 
                         if str(message) == 'None':
                             regular_message = f"**{streamer} is now LIVE on Twitch @everyone**"
@@ -141,7 +155,8 @@ class twitch_cog(commands.Cog):
                 color=discord.Color.red()
             )
             embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-            embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             return
 
@@ -163,7 +178,8 @@ class twitch_cog(commands.Cog):
                 color=discord.Color.green()
             )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
                 print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name}  has been set announcechannel\n **************************************")
                 return
@@ -176,7 +192,8 @@ class twitch_cog(commands.Cog):
                         color=discord.Color.green()
                     )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
                 print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has already been registered announcechannel\n **************************************")
                 return
@@ -191,7 +208,8 @@ class twitch_cog(commands.Cog):
                     color=discord.Color.purple()
                 )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
                 print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has been updated\n **************************************")
                 return
@@ -211,7 +229,8 @@ class twitch_cog(commands.Cog):
                     color=discord.Color.red()
                 )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
                 print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has already send you don't have permistion\n **************************************")
 
@@ -228,7 +247,8 @@ class twitch_cog(commands.Cog):
                         color=discord.Color.dark_orange()
                     )
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:
+                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                     await interaction.followup.send(embed=embed)
                     print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has already send use announcements first\n **************************************")
 
@@ -244,7 +264,8 @@ class twitch_cog(commands.Cog):
                             color=discord.Color.purple()
                         )
                         embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                        if interaction.user.avatar:
+                            embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                         await interaction.followup.send(embed=embed)
                         print(f"************************************************\n guild {interaction.guild.name} has already been registered addstreamers\n **************************************")
                         sheet.cell(row, 5).value = stream_message
@@ -298,7 +319,8 @@ class twitch_cog(commands.Cog):
                         color=discord.Color.green()
                     )
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:
+                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                     await interaction.followup.send(embed=embed)
                     print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has been set add streamer \n **************************************")
                     return
@@ -310,7 +332,8 @@ class twitch_cog(commands.Cog):
                     )
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
 
-                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:
+                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                     await interaction.followup.send(embed=embed)
                     print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} Can't find the user in Twitch \n **************************************")
                     return
@@ -332,7 +355,8 @@ class twitch_cog(commands.Cog):
                     color=discord.Color.red()
                 )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has already send you don't have permistion\n **************************************")
 
                 await interaction.followup.send(embed=embed)
@@ -350,7 +374,8 @@ class twitch_cog(commands.Cog):
                         color=discord.Color.dark_orange()
                     )
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:
+                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                     await interaction.followup.send(embed=embed)
                     print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has already send use announcechannel\n **************************************")
                     return
@@ -368,7 +393,8 @@ class twitch_cog(commands.Cog):
                     streamers.append(str(sheet.cell(row, 1).value))
                 for streamer in streamers:
                     embed.add_field(name="Name", value=f"`{streamer}`", inline="False")
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 await interaction.followup.send(embed=embed)
                 print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has send list of streamers\n **************************************")
                 return
@@ -391,7 +417,8 @@ class twitch_cog(commands.Cog):
                     color=discord.Color.red()
                 )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                 print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has already send you don't have permistion\n **************************************")
 
                 await interaction.followup.send(embed=embed)
@@ -410,7 +437,8 @@ class twitch_cog(commands.Cog):
                     )
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
 
-                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:
+                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                     await interaction.followup.send(embed=embed)
                     print(f"************************************************\n guild {interaction.guild.name} : {interaction.user.name} has already send use announcechannel\n **************************************")
                     return
@@ -433,7 +461,8 @@ class twitch_cog(commands.Cog):
                     description=f"**`{removestreamer}` has been deleted successfully**",
                     color=0x6a95a2)
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:
+                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                     await interaction.followup.send(embed=embed)
                     wb.save(sheet_path)
                     print(f"************************************************\n guild {interaction.guild.name}: {interaction.user.name} has been deleted {removestreamer}\n **************************************")
@@ -444,7 +473,8 @@ class twitch_cog(commands.Cog):
                     description=f"**`{removestreamer}` Invaild** you can know the streamers using </streamers:1135989711253536790> ",
                     color=0x6a95a2)
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
-                    embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+                    if interaction.user.avatar:
+                        embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                     await interaction.followup.send(embed=embed)
                     print(f"************************************************\n guild {interaction.guild.name}: {interaction.user.name} has been try to delete invalid {removestreamer}\n **************************************")
                     return

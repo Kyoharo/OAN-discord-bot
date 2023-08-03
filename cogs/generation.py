@@ -152,7 +152,8 @@ class Image(commands.Cog):
                 description="You have been banned from using the imagine command for bad use",
                 color=discord.Color.red()
             )
-            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             try:
                 print(f" imagine: guild: {interaction.guild.name}   user: {interaction.user.name}   ** {prompt}    -- sended baned from using -- \n")
@@ -187,7 +188,8 @@ class Image(commands.Cog):
             embed.set_author(name="OAN",
             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
             embed.set_image(url=random.choice(loading_images))
-            embed.set_footer(text=f"Loading...! Generating image...", icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=f"Loading...! Generating image...", icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
 
             if models == None:
@@ -224,7 +226,8 @@ class Image(commands.Cog):
             embed.set_author(name="OAN",
             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
             embed.set_image(url=response)
-            embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            if interaction.user.avatar:
+                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
             await interaction.edit_original_response(embed=embed)
 
 
