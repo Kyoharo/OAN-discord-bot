@@ -144,7 +144,7 @@ class Image(commands.Cog):
     @app_commands.guild_only()
     async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int] = None):
         await interaction.response.defer(thinking=True)
-        ban_users = ["well3anaar", "kyoharo"]
+        ban_users = ["well3anaar"]
 
         if interaction.user.name in ban_users:
             embed = discord.Embed(

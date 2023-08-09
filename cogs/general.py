@@ -9,7 +9,7 @@ class MyCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="channel", description="To create a channel to be the main channel where users can chat with OAN with out commands")
+    @app_commands.command(name="channel", description="Set a custom channel for the bot to work in.")
     @app_commands.guild_only()
     async def setchannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
         channel_id = str(channel.id)  # Convert to string

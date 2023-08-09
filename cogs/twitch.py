@@ -142,7 +142,7 @@ class twitch_cog(commands.Cog):
 
     @app_commands.command(name="announcechannel", description="Sets the discord channel where stream announcements will be posted.")
     @app_commands.guild_only()
-    async def announcechannel(self, interaction: discord.Interaction, channel: discord.TextChannel):
+    async def announcechannel(self, interaction: discord.Interaction, channel: discord.abc.GuildChannel):
         channel_id = str(channel.id)  # Convert to string
         user_name = interaction.user.name
         guild = str(interaction.guild.id)  # Convert to string
@@ -168,14 +168,14 @@ class twitch_cog(commands.Cog):
                 # Create a new worksheet with the value of guild_id
                 wb.create_sheet(guild)
             sheet = wb[guild]
-#SET THE DEFUALT CHANNEL
+                #SET THE DEFUALT CHANNEL
             if sheet.cell(1, 3).value is None:
                 sheet.cell(1, 3).value = channel_id
                 wb.save(sheet_path)
                 embed = discord.Embed(
                 title=f"OAN default announcechannel is ``{channel.name}``",
                 description=f"The {channel.name} has been set successfully\n Now you can add streamers by </addstreamer:1135989711253536789>",
-                color=discord.Color.green()
+                color=0x6a95a2
             )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
                 if interaction.user.avatar:
@@ -189,7 +189,7 @@ class twitch_cog(commands.Cog):
                 embed = discord.Embed(
                         title=f"Registration ``{channel}``",
                         description=f"**{channel}**  has already been registered",
-                        color=discord.Color.green()
+                        color=0x6a95a2
                     )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
                 if interaction.user.avatar:
@@ -205,7 +205,7 @@ class twitch_cog(commands.Cog):
                 embed = discord.Embed(
                     title=f"Channel updated: ``{channel.name}``",
                     description="This channel has been updated in the registration",
-                    color=discord.Color.purple()
+                    color=0x6a95a2
                 )
                 embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
                 if interaction.user.avatar:
@@ -257,11 +257,11 @@ class twitch_cog(commands.Cog):
                 sheet = wb[guild]
                 max_rows = sheet.max_row + 1
                 for row in range(1, max_rows):  # Start from row 2
-                    if str(streamer) == str(sheet.cell(row, 1).value):
+                    if str(streamer).lower() == str(sheet.cell(row, 1).value).lower():
                         embed = discord.Embed(
                             title=f"``{streamer}'s registration``",
                             description=f"**{streamer}**  has already been registered by {str(sheet.cell(row=row, column=4).value)}",
-                            color=discord.Color.purple()
+                            color=0x6a95a2
                         )
                         embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
                         if interaction.user.avatar:
@@ -273,7 +273,7 @@ class twitch_cog(commands.Cog):
                         return
                     
                 check_streamer = TwitchStreamChecker()
-                if check_streamer.is_user_exist(streamer) :
+                if check_streamer.is_user_exist(streamer.lower()) :
                     alignment = Alignment(horizontal='center', vertical='center')
                     cell = sheet.cell(max_rows, 1)
                     cell.alignment = alignment
@@ -316,7 +316,7 @@ class twitch_cog(commands.Cog):
                     embed = discord.Embed(
                         title=f"``{streamer}'s`` registration",
                         description=f"**{streamer}** has been set successfully",
-                        color=discord.Color.green()
+                        color=0x6a95a2
                     )
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
                     if interaction.user.avatar:
@@ -448,9 +448,9 @@ class twitch_cog(commands.Cog):
                 max_rows = sheet.max_row + 1 
                 remove_row_index = None
                 for row in range(2, max_rows): # Start from row 2
-                    streamer = str(sheet.cell(row, 1).value)
+                    streamer = str(sheet.cell(row, 1).value).lower()
                     streamers.append(streamer)
-                    if streamer == removestreamer:
+                    if streamer == removestreamer.lower():
                         remove_row_index = row
 
                 # If removestreamer is found, delete the row
@@ -471,7 +471,7 @@ class twitch_cog(commands.Cog):
                     embed = discord.Embed(
                     title=f"Remove Streamer",
                     description=f"**`{removestreamer}` Invaild** you can know the streamers using </streamers:1135989711253536790> ",
-                    color=0x6a95a2)
+                    color=discord.Color.dark_orange())
                     embed.set_author(name=f"OAN", icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458")
                     if interaction.user.avatar:
                         embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)

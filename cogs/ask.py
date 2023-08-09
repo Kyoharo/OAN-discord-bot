@@ -80,7 +80,11 @@ class MyCog1(commands.Cog):
         elif len(response) != 1:
             for image in response:                    
                 if str(image).startswith("http"):
-                    embed = discord.Embed()
+                    embed = discord.Embed(
+                            title='Image Link',  # Use the stream title directly as the title
+                            color=0x6a95a2,
+                            url=image 
+                    )
                     embed.set_author(name="OAN",
                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                     embed.set_image(url=image)
@@ -142,7 +146,11 @@ class MyCog1(commands.Cog):
         elif len(response) != 1:
             for image in response:                    
                 if str(image).startswith("http"):
-                    embed = discord.Embed()
+                    embed = discord.Embed(
+                            title='Image Link',  # Use the stream title directly as the title
+                            color=0x6a95a2,
+                            url=image 
+                    )
                     embed.set_author(name="OAN",
                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                     embed.set_image(url=image)
@@ -320,7 +328,11 @@ class MyCog1(commands.Cog):
         elif len(response) != 1:
             for image in response:                    
                 if str(image).startswith("http"):
-                    embed = discord.Embed()
+                    embed = discord.Embed(
+                            title='Image Link',  # Use the stream title directly as the title
+                            color=0x6a95a2,
+                            url=image 
+                    )
                     embed.set_author(name="OAN",
                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                     embed.set_image(url=image)
@@ -364,6 +376,7 @@ class MyCog1(commands.Cog):
         if str(message.channel.id) not in channel_list and not isinstance(message.channel, discord.DMChannel):
             return  # Exit if the guild is not in the channel_list and not a DM with the bot
         
+
         if message.content.startswith(":") or message.content.startswith("<") or message.content.startswith("!"):
             return  # Exit if the message start with ":"
 
@@ -419,7 +432,11 @@ class MyCog1(commands.Cog):
                     elif len(response) != 1:
                         for image in response:                    
                             if str(image).startswith("http"):
-                                embed = discord.Embed()
+                                embed = discord.Embed(
+                                        title='Image Link',  # Use the stream title directly as the title
+                                        color=0x6a95a2,
+                                        url=image 
+                                )                                
                                 embed.set_author(name="OAN",
                                 icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                                 embed.set_image(url=image)
@@ -532,7 +549,11 @@ class MyCog1(commands.Cog):
             elif len(response) != 1:
                 for image in response:                    
                     if str(image).startswith("http"):
-                        embed = discord.Embed()
+                        embed = discord.Embed(
+                                title='Image Link',  # Use the stream title directly as the title
+                                color=0x6a95a2,
+                                url=image 
+                        )
                         embed.set_author(name="OAN",
                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                         embed.set_image(url=image)
