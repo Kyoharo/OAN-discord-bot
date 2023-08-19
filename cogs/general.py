@@ -27,7 +27,6 @@ class MyCog(commands.Cog):
                 embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
             await interaction.followup.send(embed=embed)
             return
-
         else:
             sheet_path = os.path.join("core", "guild.xlsx")
             wb = openpyxl.load_workbook(sheet_path)
@@ -36,16 +35,16 @@ class MyCog(commands.Cog):
             gg = sheet.cell(2, 1).value
             is_registered = False  # Flag variable
             
-            for row in range(2, max_rows):  # Start from row 2
-                if guild == str(sheet.cell(row, 1).value):
-                    if channel_id == str(sheet.cell(row, 2).value):
-                        is_registered = True
-                        break  # Channel is already registered, break the loop
-                    else:
-                        sheet.cell(row, 2).value = channel_id
-                        sheet.cell(row, 4).value = channel.name
-                        is_registered = True
-                        break
+        for row in range(2, max_rows):  # Start from row 2
+            if guild == str(sheet.cell(row, 1).value):
+                if channel_id == str(sheet.cell(row, 2).value):
+                    is_registered = True
+                    break  # Channel is already registered, break the loop
+                else:
+                    sheet.cell(row, 2).value = channel_id
+                    sheet.cell(row, 4).value = channel.name
+                    is_registered = True
+                    break
             
             if is_registered:
                 embed = discord.Embed(
@@ -103,6 +102,7 @@ class MyCog(commands.Cog):
                 print(f"************************************************\n guild {interaction.guild.name} has been set\n **************************************")
             except Exception as e:
                 print(f"************************************************\n  {interaction.user.name} has been try to use setchannel\n **************************************")
+            return
 
     @app_commands.command(name="info", description="Information about OAN Chatbot")
     async def info(self, interaction: discord.Interaction):

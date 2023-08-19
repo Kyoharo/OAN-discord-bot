@@ -39,13 +39,12 @@ class MyCog1(commands.Cog):
         pass_question = f"**{user_name}**: Hello "
         await interaction.response.defer(thinking=True)
             # Detect the language
-        new_language =  'en'
         response = await asyncio.to_thread(chat.start, user_id, pass_question, reset="reset")    
         # language_dict[user_id] = new_language 
         embed = discord.Embed(title=f""">   ``reset_conversation``""",  
                               description="New chat has been open successfully"
                               ,color=discord.Color.green())
-        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.pn            if interaction.user.avatar:g")
+        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
         if interaction.user.avatar:    
             embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
         await interaction.followup.send(embed=embed)
