@@ -14,7 +14,7 @@ API_KEY = ["AIzaSyBBCwJsZ1AGeEE8HPRTCaMuxIMCcNAN6hk",
 
 
 def get_live_stream_id(channel_url):
-    channel_url = "https://www.youtube.com/c/" + channel_url
+    channel_url = f"https://www.youtube.com/@{channel_url}/streams" 
     response = requests.get(channel_url)
     if response.status_code == 200:
         content = response.text
@@ -95,7 +95,7 @@ class YTstats:
 
     def get_channel_statistics(self):
         """Extract the channel statistics, high-quality profile image URL, and username"""
-        print('Getting channel statistics...')
+        # print('Getting channel statistics...')
         
         # Construct the URL to retrieve channel statistics and branding settings
         url = f'https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id={self.channel_id}&key={self.api_key}'
@@ -135,7 +135,7 @@ class YTstats:
 
     def is_channel_live(self):
         """Check if the channel is currently live and get live stream details"""
-        print('Checking if channel is live...')
+        # print('Checking if channel is live...')
         
         # Construct the URL to search for live broadcasts by the channel
         url = f'https://www.googleapis.com/youtube/v3/search?part=id,snippet&type=video&eventType=live&channelId={self.channel_id}&key={self.api_key}'
@@ -165,7 +165,7 @@ class YTstats:
         
     def get_channel_video_data(self):
         "Extract all video information of the channel"
-        print('get video data...')
+        # print('get video data...')
         channel_videos = self._get_channel_id(limit=3)
         return channel_videos
     

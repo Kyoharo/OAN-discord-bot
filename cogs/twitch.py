@@ -489,7 +489,7 @@ class stream_cog(commands.Cog):
                                     embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
                                 await interaction.followup.send(embed=embed)
                                 print(f"************************************************\n guild {interaction.guild.name} has already been registered addstreamers\n **************************************")
-                                sheet.cell(row, 7).value = mention
+                                sheet.cell(row, 6).value = mention
                                 wb.save(sheet_path)
                                 return
                             
