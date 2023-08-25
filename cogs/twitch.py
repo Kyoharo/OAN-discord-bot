@@ -10,15 +10,22 @@ from datetime import datetime
 from core.twitch import TwitchStreamChecker, get_name_from_url
 from core.youtube import YTstats, get_channel_ids,API_KEY,get_channel_name,get_latest_ids, get_live_stream_id
 import random
-
+from datetime import datetime, timedelta, timezone
 
 
 def convert_timestamp(timestamp):
     # Convert the input timestamp to a datetime object
     dt_object = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')
     
-    # Convert the datetime object to the desired format
-    formatted_date = dt_object.strftime('%m/%d/%Y %I:%M %p')
+    # Convert the datetime object to UTC time (assuming the input timestamp is in UTC)
+    utc_dt = dt_object.replace(tzinfo=timezone.utc)
+    
+    # Convert to Riyadh time (UTC+3)
+    riyadh_offset = timedelta(hours=3)
+    riyadh_dt = utc_dt + riyadh_offset
+    
+    # Convert the Riyadh datetime to the desired format
+    formatted_date = riyadh_dt.strftime('%m/%d/%Y %I:%M %p')
     
     return formatted_date
 
@@ -32,7 +39,7 @@ class stream_cog(commands.Cog):
         self.update_youtube_status.start()
         self.update_youtube_live.start()
 
-    @tasks.loop(seconds=90)
+    @tasks.loop(seconds=30)
     async def update_stream_status(self):
         sheet_path = os.path.join("core", "stream_guild.xlsx")
         wb = openpyxl.load_workbook(sheet_path)
@@ -88,7 +95,7 @@ class stream_cog(commands.Cog):
                     wb.save(sheet_path)
 
 
-    @tasks.loop(seconds=90)
+    @tasks.loop(seconds=30)
     async def update_youtube_status(self):                      ##Youtube videos
 
         sheet_path = os.path.join("core", "stream_guild.xlsx")
@@ -142,6 +149,7 @@ class stream_cog(commands.Cog):
                             height = 250
                             embed.set_thumbnail(url=statistics['profile_image_url_high'])
                             # Modify the thumbnail_url to use the desired width and height
+                            video_data['thumbnails_high'] = video_data['thumbnails_high'].replace("/hqdefault.jpg", "/maxresdefault.jpg")
                             thumbnail_url = video_data['thumbnails_high'].replace("{width}", str(width)).replace("{height}", str(height))
                             embed.set_image(url=thumbnail_url)
                             description = video_data['description'].split('\n')[0]
@@ -178,7 +186,7 @@ class stream_cog(commands.Cog):
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
-    @tasks.loop(seconds=90)
+    @tasks.loop(seconds=30)
     async def update_youtube_live(self):                      ##Youtube Live
         sheet_path = os.path.join("core", "stream_guild.xlsx")
         wb = openpyxl.load_workbook(sheet_path)
@@ -225,6 +233,7 @@ class stream_cog(commands.Cog):
                         height = 250
                         embed.set_thumbnail(url=statistics['profile_image_url_high'])
                         # Modify the thumbnail_url to use the desired width and height
+                        stream_stautus['thumbnails_high'] = stream_stautus['thumbnails_high'].replace("/hqdefault.jpg", "/maxresdefault.jpg")
                         thumbnail_url = stream_stautus['thumbnails_high'].replace("{width}", str(width)).replace("{height}", str(height))
                         embed.set_image(url=thumbnail_url)
                         embed.add_field(name="Description", value=stream_stautus['description'])

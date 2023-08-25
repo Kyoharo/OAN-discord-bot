@@ -14,19 +14,22 @@ API_KEY = ["AIzaSyBBCwJsZ1AGeEE8HPRTCaMuxIMCcNAN6hk",
 
 
 def get_live_stream_id(channel_url):
-    channel_url = f"https://www.youtube.com/@{channel_url}/streams" 
-    response = requests.get(channel_url)
-    if response.status_code == 200:
-        content = response.text
-        match = re.search(r'"videoId":"(.*?)"', content)
-        
-        if match:
-            return match.group(1)
+    try:
+        channel_url = f"https://www.youtube.com/@{channel_url}/streams" 
+        response = requests.get(channel_url)
+        if response.status_code == 200:
+            content = response.text
+            match = re.search(r'"videoId":"(.*?)"', content)
+            
+            if match:
+                return match.group(1)
+            else:
+                return None
         else:
             return None
-    else:
+    except Exception:
         return None
-    
+        
 
 
 def get_latest_ids(channel):
@@ -38,8 +41,7 @@ def get_latest_ids(channel):
         latest_shorts_id = re.search('(?<="videoId":").*?(?=")', html).group()
         last_ids = [latest_video_id, latest_shorts_id]
         return last_ids
-    except Exception as e: 
-        print(e)
+    except Exception: 
         return []
 
 
@@ -68,15 +70,18 @@ def get_channel_ids(url):
     
 
 def get_channel_name(url_or_name):
-    if url_or_name.startswith("https"):
-        # Extract channel name from the URL
-        match = re.search(r'https://www\.youtube\.com/@?(\w+)', url_or_name)
-        if match:
-            return match.group(1)
-    elif url_or_name.startswith("@"):
-        # Remove "@" symbol and return the name
-        return url_or_name[1:]
-    return url_or_name
+    try:
+        if url_or_name.startswith("https"):
+            # Extract channel name from the URL
+            match = re.search(r'https://www\.youtube\.com/@?(\w+)', url_or_name)
+            if match:
+                return match.group(1)
+        elif url_or_name.startswith("@"):
+            # Remove "@" symbol and return the name
+            return url_or_name[1:]
+        return url_or_name
+    except Exception:
+        return None
 
     
 class YTstats:
