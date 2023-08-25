@@ -16,7 +16,7 @@ class MyCog(commands.Cog):
         user_name = interaction.user.name
         guild = str(interaction.guild.id)  # Convert to string
         await interaction.response.defer(thinking=True)
-
+        print("hello")
         if not (interaction.user.guild_permissions.administrator or interaction.user.guild_permissions.manage_channels):
             embed = discord.Embed(
                 title="Invalid user",
