@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from core.pageview import PageView
-from bardapi import ChatBard
+from bardapi.chat import ChatBard
 import asyncio
 # from core.tts import tts_audio
 # from core.whisper import transcribe_audio

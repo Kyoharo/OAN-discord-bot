@@ -16,7 +16,7 @@ API_KEY = ["AIzaSyBBCwJsZ1AGeEE8HPRTCaMuxIMCcNAN6hk",
 def get_live_stream_id(channel_url):
     try:
         channel_url = f"https://www.youtube.com/@{channel_url}/streams" 
-        response = requests.get(channel_url)
+        response = requests.get(channel_url, cookies={'CONSENT': 'YES+1'})
         if response.status_code == 200:
             content = response.text
             match = re.search(r'"videoId":"(.*?)"', content)
@@ -35,9 +35,9 @@ def get_live_stream_id(channel_url):
 def get_latest_ids(channel):
     try:
         channel = "https://www.youtube.com/@" + channel
-        html = requests.get(channel+"/videos").text
+        html = requests.get(channel+"/videos",cookies={'CONSENT': 'YES+1'}).text
         latest_video_id = re.search('(?<="videoId":").*?(?=")', html).group()
-        html = requests.get(channel+"/shorts").text
+        html = requests.get(channel+"/shorts", cookies={'CONSENT': 'YES+1'}).text
         latest_shorts_id = re.search('(?<="videoId":").*?(?=")', html).group()
         last_ids = [latest_video_id, latest_shorts_id]
         return last_ids
@@ -51,7 +51,7 @@ def get_channel_ids(url):
             url = "https://www.youtube.com/@" + url
         else:
             url = "https://www.youtube.com/" + url
-    response = requests.get(url)
+    response = requests.get(url, cookies={'CONSENT': 'YES+1'})
     if response.status_code == 200:
         page_content = response.text
         pattern = r'"channelId":"(.*?)"'
@@ -106,7 +106,7 @@ class YTstats:
         url = f'https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id={self.channel_id}&key={self.api_key}'
         pbar = tqdm(total=1)
         
-        json_url = requests.get(url)
+        json_url = requests.get(url, cookies={'CONSENT': 'YES+1'})
         data = json.loads(json_url.text)
         
         try:
@@ -145,7 +145,7 @@ class YTstats:
         # Construct the URL to search for live broadcasts by the channel
         url = f'https://www.googleapis.com/youtube/v3/search?part=id,snippet&type=video&eventType=live&channelId={self.channel_id}&key={self.api_key}'
         
-        json_url = requests.get(url)
+        json_url = requests.get(url, cookies={'CONSENT': 'YES+1'})
         data = json.loads(json_url.text)
         
         if 'items' in data and len(data['items']) > 0:
@@ -180,7 +180,7 @@ class YTstats:
         if limit is not None and isinstance(limit, int):
             url += "&maxResults=" + str(limit)
         print(url)
-        json_url = requests.get(url)
+        json_url = requests.get(url, cookies={'CONSENT': 'YES+1'})
         data = json.loads(json_url.text)
         
         video_ids = []
@@ -195,7 +195,7 @@ class YTstats:
 
     def _get_video_data(self, video_id):
         url = f"https://www.googleapis.com/youtube/v3/videos?key={self.api_key}&id={video_id}&part=snippet"
-        json_url = requests.get(url)
+        json_url = requests.get(url, cookies={'CONSENT': 'YES+1'})
         data = json.loads(json_url.text)
         
         if 'items' in data and len(data['items']) > 0:
