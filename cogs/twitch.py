@@ -39,7 +39,7 @@ class stream_cog(commands.Cog):
         self.update_youtube_status.start()
         self.update_youtube_live.start()
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=20)
     async def update_stream_status(self):
         sheet_path = os.path.join("core", "stream_guild.xlsx")
         wb = openpyxl.load_workbook(sheet_path)
@@ -95,7 +95,7 @@ class stream_cog(commands.Cog):
                     wb.save(sheet_path)
 
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=20)
     async def update_youtube_status(self):                      ##Youtube videos
 
         sheet_path = os.path.join("core", "stream_guild.xlsx")
@@ -186,7 +186,7 @@ class stream_cog(commands.Cog):
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
-    @tasks.loop(seconds=30)
+    @tasks.loop(seconds=20)
     async def update_youtube_live(self):                      ##Youtube Live
         sheet_path = os.path.join("core", "stream_guild.xlsx")
         wb = openpyxl.load_workbook(sheet_path)
