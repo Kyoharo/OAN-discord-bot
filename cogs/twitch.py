@@ -79,7 +79,9 @@ class stream_cog(commands.Cog):
                         button = discord.ui.Button(emoji="<:Twitch:1136322224018694195>]",label=f" Twitch.com/{streamer}",url=f"https://www.twitch.tv/{streamer}")
                         view.add_item(button)
                         # Convert to the desired format
-                        embed.set_footer(text=f"OAN")
+                        time_format = convert_timestamp(stream_info['started_at'])
+
+                        embed.set_footer(icon_url="https://media.discordapp.net/attachments/1085541383563124858/1135948796006781008/-51609794436soaav8dnrc.png?width=537&height=458",text=f"Twitch {time_format}")
 
                         if str(message) == 'None':
                             regular_message = f"**{streamer} is now LIVE on Twitch @everyone**"
