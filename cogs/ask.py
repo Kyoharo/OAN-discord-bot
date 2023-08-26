@@ -2,10 +2,10 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from core.pageview import PageView
-from bardapi.chat import ChatBard
+from bardapi import ChatBard
 import asyncio
 # from core.tts import tts_audio
-# from core.whisper import transcribe_audio
+from core.whisper import transcribe_audio
 import os
 import openpyxl
 from googletrans import Translator
@@ -259,107 +259,107 @@ class MyCog1(commands.Cog):
             print(f"Guild: {guild.name},   username: {user_name}  used Ask about Image")
         except Exception as e:
             print(f"username: {user_name}    used Ask about Image \n-----------------------------")
-# #----------------------------------------------------------------------
-#     @app_commands.command(name='voice', description='Communicate with the bot using Record')
-#     @app_commands.guild_only()
-#     async def ask_question(self, interaction: discord.Interaction, voice_record: discord.Attachment):
-#         user_name = interaction.user.name
-#         user_id = str(interaction.user.id)
-#         await interaction.response.defer(thinking=True)
+#----------------------------------------------------------------------
+    @app_commands.command(name='voice', description='Communicate with the bot using Record')
+    @app_commands.guild_only()
+    async def ask_question(self, interaction: discord.Interaction, voice_record: discord.Attachment):
+        user_name = interaction.user.name
+        user_id = str(interaction.user.id)
+        await interaction.response.defer(thinking=True)
 
-#         DOWNLOAD_DIR = os.path.join("audio_files", user_id)
-#         if not os.path.exists(DOWNLOAD_DIR):
-#             os.makedirs(DOWNLOAD_DIR)
-#         filename = os.path.join(DOWNLOAD_DIR, voice_record.filename)
-#         await voice_record.save(filename)
-#         #error
-#         if not voice_record.content_type.startswith('audio'):
-#             embed = discord.Embed(
-#                 title="Invalid File",
-#                 description="Please send a voice record.",
-#                 color=discord.Color.red()
-#             )
-#             if interaction.user.avatar:    
-#                 embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
-#             await interaction.followup.send(embed=embed)
-#             return
+        DOWNLOAD_DIR = os.path.join("audio_files", user_id)
+        if not os.path.exists(DOWNLOAD_DIR):
+            os.makedirs(DOWNLOAD_DIR)
+        filename = os.path.join(DOWNLOAD_DIR, voice_record.filename)
+        await voice_record.save(filename)
+        #error
+        if not voice_record.content_type.startswith('audio'):
+            embed = discord.Embed(
+                title="Invalid File",
+                description="Please send a voice record.",
+                color=discord.Color.red()
+            )
+            if interaction.user.avatar:    
+                embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
+            return
 
-#         your_question, language = transcribe_audio(filename)
-#         pass_question = f"**{user_name}**: {your_question}"
-#     # Detect the language
+        your_question, language = transcribe_audio(filename)
+        pass_question = f"**{user_name}**: {your_question}"
+    # Detect the language
 
-#         response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
-#         language_dict[int(user_id)] = language 
+        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+        language_dict[int(user_id)] = language 
 
-#         # if "en" in language or "ja" in language and len(response) < 2500:
-#         #     your_question = your_question[:230]
-#         #     output_path = f"audio_files/{user_id}/output.wav"
-#         #     tts_audio(response[0], output_path, language)
+        # if "en" in language or "ja" in language and len(response) < 2500:
+        #     your_question = your_question[:230]
+        #     output_path = f"audio_files/{user_id}/output.wav"
+        #     tts_audio(response[0], output_path, language)
 
-#         #     if os.path.exists(output_path):
-#         #         embed = discord.Embed(
-#         #             title=f""">   ``{your_question}``""",
-#         #             description=f"{response}",
-#         #             color=discord.Color.dark_gold()
-#         #         )
-#         #         embed.set_author(
-#         #             name="OAN",
-#         #             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png"
-#         #         )
-#         #         embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
-#         #         await interaction.followup.send(embed=embed, file=discord.File(output_path, filename="output.wav"))
-#         #         return
+        #     if os.path.exists(output_path):
+        #         embed = discord.Embed(
+        #             title=f""">   ``{your_question}``""",
+        #             description=f"{response}",
+        #             color=discord.Color.dark_gold()
+        #         )
+        #         embed.set_author(
+        #             name="OAN",
+        #             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png"
+        #         )
+        #         embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
+        #         await interaction.followup.send(embed=embed, file=discord.File(output_path, filename="output.wav"))
+        #         return
 
-#         embeds = []
+        embeds = []
 
-#         if len(response[0]) > 2500 and len(response) == 1:
-#             response = response[0]
-#             texts = []
-#             for i in range(0, len(response), 2500):
-#                 texts.append(response[i:i+2500])
-#             for text in texts:
-#                 your_question = your_question[:230]
-#                 embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
-#                 embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-#                 embeds.append(embed)
-#             view = PageView(embeds)
-#             await interaction.followup.send(embed=view.initial(), view=view)
-#         elif len(response) != 1:
-#             for image in response:                    
-#                 if str(image).startswith("http"):
-#                     embed = discord.Embed(
-#                             title='Image Link',  # Use the stream title directly as the title
-#                             color=0x6a95a2,
-#                             url=image 
-#                     )
-#                     embed.set_author(name="OAN",
-#                     icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-#                     embed.set_image(url=image)
-#                     if interaction.user.avatar:                
-#                         embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
-#                     embeds.append(embed)
-#                 else:
-#                     your_question = your_question[:230]
-#                     embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{image}", color=discord.Color.dark_gold())
-#                     embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-#                     embeds.append(embed)
-#             view = PageView(embeds)
-#             await interaction.followup.send(embed=view.initial(), view=view)
+        if len(response[0]) > 2500 and len(response) == 1:
+            response = response[0]
+            texts = []
+            for i in range(0, len(response), 2500):
+                texts.append(response[i:i+2500])
+            for text in texts:
+                your_question = your_question[:230]
+                embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
+                embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                embeds.append(embed)
+            view = PageView(embeds)
+            await interaction.followup.send(embed=view.initial(), view=view)
+        elif len(response) != 1:
+            for image in response:                    
+                if str(image).startswith("http"):
+                    embed = discord.Embed(
+                            title='Image Link',  # Use the stream title directly as the title
+                            color=0x6a95a2,
+                            url=image 
+                    )
+                    embed.set_author(name="OAN",
+                    icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                    embed.set_image(url=image)
+                    if interaction.user.avatar:                
+                        embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                    embeds.append(embed)
+                else:
+                    your_question = your_question[:230]
+                    embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{image}", color=discord.Color.dark_gold())
+                    embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                    embeds.append(embed)
+            view = PageView(embeds)
+            await interaction.followup.send(embed=view.initial(), view=view)
 
-#         else:
-#             response = response[0]
-#             your_question = your_question[:230]
-#             embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
-#             embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-#             if interaction.user.avatar:                
-#                 embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
-#             await interaction.followup.send(embed=embed)
+        else:
+            response = response[0]
+            your_question = your_question[:230]
+            embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+            embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+            if interaction.user.avatar:                
+                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+            await interaction.followup.send(embed=embed)
 
-#         try:    
-#             guild = interaction.guild   
-#             print(f"Guild: {guild.name},   username: {user_name}  used Voice ")
-#         except Exception as e:
-#             print(f"username: {user_name}    used Voice \n-----------------------------")
+        try:    
+            guild = interaction.guild   
+            print(f"Guild: {guild.name},   username: {user_name}  used Voice ")
+        except Exception as e:
+            print(f"username: {user_name}    used Voice \n-----------------------------")
 
 #----------------------------------------------------------------------
     @commands.Cog.listener()
@@ -382,84 +382,84 @@ class MyCog1(commands.Cog):
 
         if len(message.attachments) > 0:
             for attachment in message.attachments:
-                # if attachment.content_type.startswith('audio'):
-                #     user_name = message.author.name
-                #     user_id = str(message.author.id)
-                #     DOWNLOAD_DIR = os.path.join("audio_files", user_id)
+                if attachment.content_type.startswith('audio'):
+                    user_name = message.author.name
+                    user_id = str(message.author.id)
+                    DOWNLOAD_DIR = os.path.join("audio_files", user_id)
 
-                #     if not os.path.exists(DOWNLOAD_DIR):
-                #         os.makedirs(DOWNLOAD_DIR)
+                    if not os.path.exists(DOWNLOAD_DIR):
+                        os.makedirs(DOWNLOAD_DIR)
 
-                #     filename = os.path.join(DOWNLOAD_DIR, attachment.filename)
-                #     await attachment.save(filename)
+                    filename = os.path.join(DOWNLOAD_DIR, attachment.filename)
+                    await attachment.save(filename)
 
-                #     your_question, language = transcribe_audio(filename)
-                #     pass_question = f"**{user_name}**: {your_question}"
+                    your_question, language = transcribe_audio(filename)
+                    pass_question = f"**{user_name}**: {your_question}"
 
-                #     response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
-                #     language_dict[int(user_id)] = language
+                    response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+                    language_dict[int(user_id)] = language
 
-                #     # if "en" in language or "ja" in language and len(response) < 2500:
-                #     #     output_path = f"audio_files/{user_id}/output.wav"
-                #     #     tts_audio(response[0], output_path, language)
+                    # if "en" in language or "ja" in language and len(response) < 2500:
+                    #     output_path = f"audio_files/{user_id}/output.wav"
+                    #     tts_audio(response[0], output_path, language)
 
-                #     #     if os.path.exists(output_path):
-                #     #         your_question = your_question[:230]
-                #     #         embed = discord.Embed(title=f""">   ``{your_question}``""",
-                #     #                             description=f"{response}",
-                #     #                             color=discord.Color.dark_gold())
-                #     #         embed.set_author(name="OAN",
-                #     #                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                #     #         embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                    #     if os.path.exists(output_path):
+                    #         your_question = your_question[:230]
+                    #         embed = discord.Embed(title=f""">   ``{your_question}``""",
+                    #                             description=f"{response}",
+                    #                             color=discord.Color.dark_gold())
+                    #         embed.set_author(name="OAN",
+                    #                         icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                    #         embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
 
-                #     #         await message.reply(embed=embed, file=discord.File(output_path, filename="output.wav"))
-                #     #         return
+                    #         await message.reply(embed=embed, file=discord.File(output_path, filename="output.wav"))
+                    #         return
 
-                #     embeds = []
-                #     if len(response[0]) > 2500 and len(response) == 1:
-                #         response = response[0]
-                #         texts = []
-                #         for i in range(0, len(response), 2500):
-                #             texts.append(response[i:i+2500])
-                #         for text in texts:
-                #             your_question = your_question[:230]
-                #             embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
-                #             embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                #             embeds.append(embed)
-                #         view = PageView(embeds)
-                #         await message.reply(embed=view.initial(), view=view)
-                #     elif len(response) != 1:
-                #         for image in response:                    
-                #             if str(image).startswith("http"):
-                #                 embed = discord.Embed(
-                #                         title='Image Link',  # Use the stream title directly as the title
-                #                         color=0x6a95a2,
-                #                         url=image 
-                #                 )                                
-                #                 embed.set_author(name="OAN",
-                #                 icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                #                 embed.set_image(url=image)
-                #                 if message.author.avatar:    
-                #                     embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
-                #                 embeds.append(embed)
-                #             else:
-                #                 your_question = your_question[:230]
-                #                 embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{image}", color=discord.Color.dark_gold())
-                #                 embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                #                 embeds.append(embed)
-                #         view = PageView(embeds)
-                #         await message.reply(embed=view.initial(), view=view)
+                    embeds = []
+                    if len(response[0]) > 2500 and len(response) == 1:
+                        response = response[0]
+                        texts = []
+                        for i in range(0, len(response), 2500):
+                            texts.append(response[i:i+2500])
+                        for text in texts:
+                            your_question = your_question[:230]
+                            embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{text}", color=discord.Color.dark_gold())
+                            embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                            embeds.append(embed)
+                        view = PageView(embeds)
+                        await message.reply(embed=view.initial(), view=view)
+                    elif len(response) != 1:
+                        for image in response:                    
+                            if str(image).startswith("http"):
+                                embed = discord.Embed(
+                                        title='Image Link',  # Use the stream title directly as the title
+                                        color=0x6a95a2,
+                                        url=image 
+                                )                                
+                                embed.set_author(name="OAN",
+                                icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                                embed.set_image(url=image)
+                                if message.author.avatar:    
+                                    embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                                embeds.append(embed)
+                            else:
+                                your_question = your_question[:230]
+                                embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{image}", color=discord.Color.dark_gold())
+                                embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                                embeds.append(embed)
+                        view = PageView(embeds)
+                        await message.reply(embed=view.initial(), view=view)
 
-                #     else:
-                #         response = response[0]
-                #         your_question = your_question[:230]
-                #         embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
-                #         embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                #         if message.author.avatar:
-                #             embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
-                #         await message.reply(embed=embed)
+                    else:
+                        response = response[0]
+                        your_question = your_question[:230]
+                        embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+                        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                        if message.author.avatar:
+                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                        await message.reply(embed=embed)
                         
-                if attachment.content_type.startswith(('video', 'gif')):
+                elif attachment.content_type.startswith(('video', 'gif')):
                     return
 
                 elif attachment.content_type.startswith('image'):
