@@ -54,7 +54,7 @@ class TwitchStreamChecker:
         
         if len(stream_data['data']) == 1:
             stream_info = stream_data['data'][0]
-            thumbnail_url = stream_info['thumbnail_url'].replace("{width}", "500").replace("{height}", "250")
+            thumbnail_url = stream_info['thumbnail_url']
             
             return {
                 'is_live': True,
