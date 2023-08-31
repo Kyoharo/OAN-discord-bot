@@ -102,7 +102,7 @@ class ChatBard:
                 for image in response['images']:
                     self.content_list.append(image)
         except Exception as e:
-            print(f"Issue {e} with {self.current_token_index}: < {self.token}>")
+            print(f"Issue {e} with ((( {self.current_token_index}  ))):\n < {self.token}>")
             if self.current_token_index > len(self.tokens):
                 self.send_email( body = "All tokens has been used please reload.\n\nBR\nOAN ")
                 print(f"{self.token} : {self.current_token_index}")
@@ -123,7 +123,7 @@ class ChatBard:
             else:
                 self.current_token_index = self.current_token_index + 1
                 self.token = self.tokens[self.current_token_index]
-                print(f"new tocken = {self.token} self.current_token_index")
+                print(f"- New tocken = {self.current_token_index}  {self.token} ")
                 self.start(
                     start_input["USER_ID"],
                     start_input["QUESTION"],
