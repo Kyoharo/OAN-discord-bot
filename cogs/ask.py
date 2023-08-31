@@ -572,7 +572,8 @@ class MyCog1(commands.Cog):
                 response = response[0]
                 embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
                 embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                if message.author.avatar:    
+                    embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                 await message.reply(embed=embed)
 
         try:

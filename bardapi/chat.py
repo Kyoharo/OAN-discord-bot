@@ -14,7 +14,7 @@ class ChatBard:
     def __init__(self):
         self.bard = None
         self.sessions = {}
-        self.current_token_index = 1
+        self.current_token_index = 0
         self.content_list = []
 
 
@@ -102,17 +102,28 @@ class ChatBard:
                 for image in response['images']:
                     self.content_list.append(image)
         except Exception as e:
-            print(f"{e}  {self.current_token_index}:")
+            print(f"Issue {e} with {self.current_token_index}: < {self.token}>")
             if self.current_token_index > len(self.tokens):
                 self.send_email( body = "All tokens has been used please reload.\n\nBR\nOAN ")
                 print(f"{self.token} : {self.current_token_index}")
 
-            elif self.current_token_index > 3:
+            elif self.current_token_index > len(self.tokens) /2:
                 self.send_email( body = "Alert!!\n tokens more then 3.\n\nBR\nOAN ")
                 print(f"{self.token} : {self.current_token_index}")
+                self.current_token_index = self.current_token_index + 1
+                self.token = self.tokens[self.current_token_index]
+                self.start(
+                    start_input["USER_ID"],
+                    start_input["QUESTION"],
+                    start_input["LANGUAGE"],
+                    start_input["RESET"],
+                    start_input["IMAGE"]
+                )
+
             else:
                 self.current_token_index = self.current_token_index + 1
                 self.token = self.tokens[self.current_token_index]
+                print(f"new tocken = {self.token} self.current_token_index")
                 self.start(
                     start_input["USER_ID"],
                     start_input["QUESTION"],
