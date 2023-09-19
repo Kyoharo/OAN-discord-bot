@@ -372,7 +372,7 @@ class MyCog1(commands.Cog):
         sheet = wb['Sheet1']
         channel_list = [str(cell.value) for cell in sheet['B'] if cell.value]
 
-        if str(message.channel.id) not in channel_list and not isinstance(message.channel, discord.DMChannel):
+        if str(message.channel.id) not in channel_list :#  and not isinstance(message.channel, discord.DMChannel):
             return  # Exit if the guild is not in the channel_list and not a DM with the bot
         
 

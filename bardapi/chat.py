@@ -43,7 +43,10 @@ class ChatBard:
             os.getenv('BARD_TOKEN2'),
             os.getenv('BARD_TOKEN3'),
             os.getenv('BARD_TOKEN4'),
-            os.getenv('BARD_TOKEN5')
+            os.getenv('BARD_TOKEN5'),
+            os.getenv('BARD_TOKEN6'),
+            os.getenv('BARD_TOKEN7'),
+            os.getenv('BARD_TOKEN8')
         ]
         self.token = self.tokens[self.current_token_index]
         if language is None:
@@ -106,12 +109,14 @@ class ChatBard:
             if self.current_token_index > len(self.tokens):
                 self.send_email( body = "All tokens has been used please reload.\n\nBR\nOAN ")
                 print(f"{self.token} : {self.current_token_index}")
+                del self.sessions[user_id]
 
             elif self.current_token_index > len(self.tokens) /2:
                 self.send_email( body = "Alert!!\n tokens more then 3.\n\nBR\nOAN ")
                 print(f"{self.token} : {self.current_token_index}")
                 self.current_token_index = self.current_token_index + 1
                 self.token = self.tokens[self.current_token_index]
+                del self.sessions[user_id]
                 self.start(
                     start_input["USER_ID"],
                     start_input["QUESTION"],
@@ -122,8 +127,11 @@ class ChatBard:
 
             else:
                 self.current_token_index = self.current_token_index + 1
+                if self.current_token_index > 8:
+                    self.current_token_index = 0
                 self.token = self.tokens[self.current_token_index]
                 print(f"- New tocken = {self.current_token_index}  {self.token} ")
+                del self.sessions[user_id]
                 self.start(
                     start_input["USER_ID"],
                     start_input["QUESTION"],
