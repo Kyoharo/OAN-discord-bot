@@ -59,7 +59,7 @@ class MyCog1(commands.Cog):
     async def ask(self, interaction: discord.Interaction, your_question: str):
         user_id = interaction.user.id
         user_name = interaction.user.name
-        pass_question = f"**{user_name}**: {your_question}"
+        pass_question = f"{your_question}"
         await interaction.response.defer(thinking=True)
         response = await asyncio.to_thread(chat.start, user_id, pass_question)
 
@@ -120,7 +120,7 @@ class MyCog1(commands.Cog):
     async def ask_cmd(self, ctx, *, your_question):
         user_id = ctx.author.id
         user_name = ctx.author.name
-        pass_question = f"**{user_name}**: {your_question}"
+        pass_question = f"{your_question}"
         await ctx.defer()
             # Detect the language
         # new_language =  detect_language(your_question)
@@ -285,7 +285,7 @@ class MyCog1(commands.Cog):
             return
 
         your_question, language = transcribe_audio(filename)
-        pass_question = f"**{user_name}**: {your_question}"
+        pass_question = f"{your_question}"
     # Detect the language
 
         response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
@@ -394,7 +394,7 @@ class MyCog1(commands.Cog):
                     await attachment.save(filename)
 
                     your_question, language = transcribe_audio(filename)
-                    pass_question = f"**{user_name}**: {your_question}"
+                    pass_question = f"{your_question}"
 
                     response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
                     language_dict[int(user_id)] = language
@@ -527,7 +527,7 @@ class MyCog1(commands.Cog):
         else:
             user_id = message.author.id
             user_name = message.author.name
-            pass_question = f"**{user_name}**: {message.content}"
+            pass_question = f"{message.content}"
             your_question = message.content
             # new_language = detect_language(message.content)
             response = await asyncio.to_thread(chat.start, user_id, pass_question)

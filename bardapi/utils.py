@@ -1,4 +1,6 @@
 # Util Functions for Async and Sync Core Cookie Modes
+import uuid
+import json
 import requests
 import browser_cookie3
 from bardapi.constants import IMG_UPLOAD_HEADERS
@@ -29,7 +31,7 @@ def extract_links(data: list) -> list:
     return links
 
 
-def upload_image(image: bytes, filename="Photo.jpg"):
+def upload_image(image: bytes, filename: str = "Photo.jpg"):
     """
     Upload image into bard bucket on Google API, do not need session.
 
@@ -61,19 +63,25 @@ def upload_image(image: bytes, filename="Photo.jpg"):
     return resp.text
 
 
-def extract_bard_cookie():
+def extract_bard_cookie(cookies: bool = False) -> dict:
     """
-    Extract token cookie from browser.
-    Supports all modern web browsers and OS
+    Extracts the specified Bard cookie(s) from the browser's cookies.
 
+    This function searches for the specified Bard cookies in various web browsers
+    installed on the system. It supports modern web browsers and operating systems.
+
+    Args:
+        cookies (bool, optional): If False, extracts only '__Secure-1PSID' cookie.
+            If True, extracts '__Secure-1PSID', '__Secure-1PSIDTS', and '__Secure-1PSIDCC' cookies.
+            Defaults to False.
 
     Returns:
-        str: __Secure-1PSID cookie value
-    """
+        dict: A dictionary containing the extracted Bard cookies.
 
-    # browser_cookie3.load is similar function but it's broken
-    # So here we manually search accross all browsers
-    browsers = [
+    Raises:
+        Exception: If no supported browser is found or if there's an issue with cookie extraction.
+    """
+    supported_browsers = [
         browser_cookie3.chrome,
         browser_cookie3.chromium,
         browser_cookie3.opera,
@@ -85,16 +93,35 @@ def extract_bard_cookie():
         browser_cookie3.librewolf,
         browser_cookie3.safari,
     ]
-    for browser_fn in browsers:
-        # if browser isn't installed browser_cookie3 raises exception
-        # hence we need to ignore it and try to find the right one
+
+    cookie_dict = {}
+
+    for browser_fn in supported_browsers:
         try:
             cj = browser_fn(domain_name=".google.com")
+
             for cookie in cj:
+                print(cookie.name)
                 if cookie.name == "__Secure-1PSID" and cookie.value.endswith("."):
-                    return cookie.value
-        except:
+                    cookie_dict["__Secure-1PSID"] = cookie.value
+                if cookies:
+                    if cookie.name == "__Secure-1PSIDTS":
+                        print(cookie.value)
+                        cookie_dict["__Secure-1PSIDTS"] = cookie.value
+                    elif cookie.name == "__Secure-1PSIDCC":
+                        print(cookie.value)
+                        cookie_dict["__Secure-1PSIDCC"] = cookie.value
+                if len(cookie_dict) == 3:
+                    return cookie_dict
+        except Exception as e:
+            # Ignore exceptions and try the next browser function
             continue
+
+    if not cookie_dict:
+        raise Exception("No supported browser found or issue with cookie extraction")
+
+    print(cookie_dict)
+    return cookie_dict
 
 
 def max_token(text: str, n: int):
@@ -109,7 +136,6 @@ def max_token(text: str, n: int):
         None
     """
     word_count = 0
-    word_start = 0
     for i, char in enumerate(text):
         if char.isspace():
             word_count += 1
@@ -143,3 +169,135 @@ def max_sentence(text: str, n: int):
                 print("".join(sentences).strip())
                 return
     print("".join(sentences).strip())
+
+
+def build_input_text_struct(
+    input_text: str, conversation_id: int, response_id: int, choice_id: int
+) -> dict:
+    return [
+        [input_text, 0, None, [], None, None, 0],
+        ["en"],
+        [conversation_id, response_id, choice_id, None, None, []],
+        None,
+        None,
+        None,
+        [0],
+        0,
+        [],
+        [],
+        1,
+        1,
+    ]
+
+
+def build_input_image_struct(
+    transl_text: str, image_url: int, lang: str = None, default_language: str = "en"
+) -> dict:
+    return [
+        None,
+        [
+            [transl_text, 0, None, [[[image_url, 1], "uploaded_photo.jpg"]]],
+            [lang if lang is not None else default_language],
+            ["", "", ""],
+            "",  # Unknown random string value (1000 characters +) - If needed, can replace with a random string generator
+            uuid.uuid4().hex,  # Random uuidv4 (32 characters)
+            None,
+            [1],
+            0,
+            [],
+            [],
+        ],
+    ]
+
+
+def build_input_replit_data_struct(instructions: str, code: str, filename: str) -> dict:
+    """
+    Creates and returns the input_image_data_struct based on provided parameters.
+
+    :param instructions: The instruction text.
+    :param code: The code.
+    :param filename: The filename.
+
+    :return: The input_image_data_struct.
+    """
+    return [
+        [
+            [
+                "qACoKe",
+                json.dumps([instructions, 5, code, [[filename, code]]]),
+                None,
+                "generic",
+            ]
+        ]
+    ]
+
+
+def build_bard_answer(
+    parsed_answer: list, images: str, program_lang: str, code: str, resp: dict
+) -> dict:
+    return {
+        "content": parsed_answer[4][0][1][0],
+        "conversation_id": parsed_answer[1][0],
+        "response_id": parsed_answer[1][1],
+        "factuality_queries": parsed_answer[3],
+        "text_query": parsed_answer[2][0] if parsed_answer[2] else "",
+        "choices": [{"id": x[0], "content": x[1]} for x in parsed_answer[4]],
+        "links": extract_links(parsed_answer[4]),
+        "images": images,
+        "program_lang": program_lang,
+        "code": code,
+        "status_code": resp.status_code,
+    }
+
+
+def build_export_data_structure(
+    conv_id: int, resp_id: int, choice_id: int, title: str
+) -> dict:
+    return [
+        [
+            [
+                "fuVx7",
+                json.dumps(
+                    [
+                        [
+                            None,
+                            [
+                                [
+                                    [conv_id, resp_id],
+                                    None,
+                                    None,
+                                    [[], [], [], choice_id, []],
+                                ]
+                            ],
+                            [0, title],
+                        ]
+                    ]
+                ),
+                None,
+                "generic",
+            ]
+        ]
+    ]
+
+
+def build_image_bard_answer(
+    translated_content: str, parsed_answer: list, resp: dict
+) -> dict:
+    """
+    For the image bard, unlike build_bard_answer which translates all choices,
+    this function is simplified since it only translates a single sentence.
+    """
+
+    return {
+        "content": translated_content,
+        "conversation_id": parsed_answer[1][0],
+        "response_id": parsed_answer[1][1],
+        "factuality_queries": parsed_answer[3],
+        "text_query": parsed_answer[2][0] if parsed_answer[2] else "",
+        "choices": [{"id": x[0], "content": x[1]} for x in parsed_answer[4]],
+        "links": extract_links(parsed_answer[4]),
+        "images": [""],
+        "program_lang": "",
+        "code": "",
+        "status_code": resp.status_code,
+    }

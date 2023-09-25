@@ -4,13 +4,28 @@ import uuid
 import string
 import random
 import base64
+from typing import Optional
 from re import search
 from langdetect import detect
 from httpx import AsyncClient
 from deep_translator import GoogleTranslator
 from google.cloud import translate_v2 as translate
-from bardapi.constants import ALLOWED_LANGUAGES, SESSION_HEADERS
-from bardapi.utils import extract_links, upload_image, extract_bard_cookie
+from bardapi.constants import (
+    ALLOWED_LANGUAGES,
+    SESSION_HEADERS,
+    TEXT_GENERATION_WEB_SERVER_PARAM,
+)
+from bardapi.utils import (
+    extract_links,
+    build_input_replit_data_struct,
+    build_image_bard_answer,
+    build_export_data_structure,
+    build_bard_answer,
+    upload_image,
+    extract_bard_cookie,
+    build_input_text_struct,
+    build_input_image_struct,
+)
 
 
 class BardAsync:
@@ -20,37 +35,34 @@ class BardAsync:
 
     def __init__(
         self,
-        token: str = None,
+        token: Optional[str] = None,
         timeout: int = 20,
-        proxies: dict = None,
-        google_translator_api_key: str = None,
-        language: str = None,
+        proxies: Optional[dict] = None,
+        conversation_id: Optional[str] = None,
+        google_translator_api_key: Optional[str] = None,
+        language: Optional[str] = None,
         run_code: bool = False,
-        token_from_browser=False,
+        token_from_browser: bool = False,
     ):
         """
         Initialize the Bard instance.
 
         Args:
-            token (str): Bard API token.
-            timeout (int): Request timeout in seconds.
-            proxies (dict): Proxy configuration for requests.
-            google_translator_api_key (str): Google cloud translation API key.
-            language (str): Natural language code for translation (e.g., "en", "ko", "ja").
-            run_code (bool): Whether to directly execute the code included in the answer (Python only)
-            token_from_browser (bool): Gets a token from the browser
+            token (str, optional): Bard API token.
+            timeout (int, optional, default = 20): Request timeout in seconds.
+            proxies (dict, optional): Proxy configuration for requests.
+            conversation_id (str, optional): Conversation ID.
+            google_translator_api_key (str, optional): Google cloud translation API key.
+            language (str, optional): Natural language code for translation (e.g., "en", "ko", "ja").
+            run_code (bool, optional, default = False): Whether to directly execute the code included in the answer (Python only)
+            token_from_browser (bool, optional, default = False): Gets a token from the browser
         """
-        self.token = token or os.getenv("_BARD_API_KEY")
-        if not self.token and token_from_browser:
-            self.token = extract_bard_cookie()
-            if not self.token:
-                raise Exception(
-                    "\nCan't extract cookie from browsers.\nPlease sign in first at\nhttps://accounts.google.com/v3/signin/identifier?followup=https://bard.google.com/&flowName=GlifWebSignIn&flowEntry=ServiceLogin"
-                )
+
+        self.token = token or self._get_token(token_from_browser)
         self.proxies = proxies
         self.timeout = timeout
         self._reqid = int("".join(random.choices(string.digits, k=4)))
-        self.conversation_id = ""
+        self.conversation_id = conversation_id or ""
         self.response_id = ""
         self.choice_id = ""
         # Making httpx async client that will be used for all API calls
@@ -65,6 +77,57 @@ class BardAsync:
         self.cookie_dict = {"__Secure-1PSID": self.token}
         self.run_code = run_code or False
         self.google_translator_api_key = google_translator_api_key
+
+    def _get_token(self, token_from_browser: bool) -> dict:
+        """
+        Get the Bard API token either from the provided token or from the browser cookie.
+
+        Args:
+            token_from_browser (bool): Whether to extract the token from the browser cookie.
+
+        Returns:
+            dict: The Bard API tokens.
+        Raises:
+            Exception: If the token is not provided and can't be extracted from the browser.
+        """
+        if token_from_browser:
+            extracted_cookie_dict = extract_bard_cookie(cookies=True)
+            if not extracted_cookie_dict:
+                raise Exception("Failed to extract cookie from browsers.")
+            return extracted_cookie_dict
+        else:
+            raise Exception(
+                "Bard API Key must be provided as token argument or extracted from browser."
+            )
+
+    async def _get_snim0e(self) -> str:
+        """
+        The _get_snim0e function is used to get the SNlM0e value from the Bard website.
+
+        The function uses a regular expression to search for the SNlM0e value in the response text.
+        If it finds it, then it returns that value.
+
+        :param self: Represent the instance of the class
+        :return: (`str`) The SNlM0e value
+        """
+        if not self.token or self.token[-1] != ".":
+            raise Exception(
+                "__Secure-1PSID value must end with a single dot. Enter correct __Secure-1PSID value."
+            )
+
+        resp = await self.client.get(
+            "https://bard.google.com/", timeout=self.timeout, follow_redirects=True
+        )
+        if resp.status_code != 200:
+            raise Exception(
+                f"Response status code is not 200. Response Status is {resp.status_code}"
+            )
+        snim0e = search(r"SNlM0e\":\"(.*?)\"", resp.text)
+        if not snim0e:
+            raise Exception(
+                "SNlM0e value not found in response. Check __Secure-1PSID value."
+            )
+        return snim0e.group(1)
 
     async def get_answer(self, input_text: str) -> dict:
         """
@@ -94,7 +157,7 @@ class BardAsync:
                     "text_query": str,
                     "choices": list,
                     "links": list
-                    "images": set,
+                    "images": list,
                     "program_lang": str,
                     "code": str,
                     "status_code": int
@@ -104,7 +167,7 @@ class BardAsync:
         if not isinstance(self.SNlM0e, str):
             self.SNlM0e = await self.SNlM0e
         params = {
-            "bl": "boq_assistant-bard-web-server_20230419.00_p1",
+            "bl": TEXT_GENERATION_WEB_SERVER_PARAM,
             "_reqid": str(self._reqid),
             "rt": "c",
         }
@@ -146,6 +209,7 @@ class BardAsync:
             params=params,
             data=data,
             timeout=self.timeout,
+            proxies=self.proxies,
             follow_redirects=True,
             headers=SESSION_HEADERS,
             cookies=self.cookie_dict,
@@ -160,12 +224,12 @@ class BardAsync:
 
         # [Optional] Gather image links
         try:
-            images = set()
+            images = list()
             if len(resp_json) >= 3:
                 if len(resp_json[4][0]) >= 4 and resp_json[4][0][4] is not None:
                     for img in resp_json[4][0][4]:
                         try:
-                            images.add(img[0][0][0])
+                            images.append(img[0][0][0])
                         except Exception as e:
                             # TODO:
                             #  handle exception using logging instead
@@ -267,7 +331,7 @@ class BardAsync:
 
         Args:
             input_text (str): Input text for the query.
-            lang (str): Input language for the query
+            lang (str, optional, default = "en-US"): Input language for the query
 
         Returns:
             dict: Answer from the Bard API in the following format:
@@ -277,7 +341,7 @@ class BardAsync:
             }
         """
         params = {
-            "bl": "boq_assistant-bard-web-server_20230419.00_p1",
+            "bl": TEXT_GENERATION_WEB_SERVER_PARAM,
             "_reqid": str(self._reqid),
             "rt": "c",
         }
@@ -297,6 +361,7 @@ class BardAsync:
             params=params,
             data=data,
             timeout=self.timeout,
+            proxies=self.proxies,
         )
 
         # Post-processing of response
@@ -312,36 +377,7 @@ class BardAsync:
         audio_bytes = base64.b64decode(audio_b64)
         return {"audio": audio_bytes, "status_code": resp.status_code}
 
-    async def _get_snim0e(self):
-        """
-        The _get_snim0e function is used to get the SNlM0e value from the Bard website.
-
-        The function uses a regular expression to search for the SNlM0e value in the response text.
-        If it finds it, then it returns that value.
-
-        :param self: Represent the instance of the class
-        :return: (`str`) The snlm0e value
-        """
-        if not self.token or self.token[-1] != ".":
-            raise Exception(
-                "__Secure-1PSID value must end with a single dot. Enter correct __Secure-1PSID value."
-            )
-
-        resp = await self.client.get(
-            "https://bard.google.com/", timeout=self.timeout, follow_redirects=True
-        )
-        if resp.status_code != 200:
-            raise Exception(
-                f"Response status code is not 200. Response Status is {resp.status_code}"
-            )
-        snim0e = search(r"SNlM0e\":\"(.*?)\"", resp.text)
-        if not snim0e:
-            raise Exception(
-                "SNlM0e value not found in response. Check __Secure-1PSID value."
-            )
-        return snim0e.group(1)
-
-    async def export_conversation(self, bard_answer, title: str = "") -> str:
+    async def export_conversation(self, bard_answer, title: str = "") -> dict:
         """
         Get Share URL for specifc answer from bard
 
@@ -359,7 +395,7 @@ class BardAsync:
 
         Args:
             bard_answer (dict): bard_answer returned from get_answer
-            title (str): Title for URL
+            title (str, optional, default = ""): Title for URL
         Returns:
             dict: Answer from the Bard API in the following format:
             {
@@ -373,7 +409,7 @@ class BardAsync:
         params = {
             "rpcids": "fuVx7",
             "source-path": "/",
-            "bl": "boq_assistant-bard-web-server_20230713.13_p0",
+            "bl": TEXT_GENERATION_WEB_SERVER_PARAM,
             # '_reqid': str(self._reqid),
             "rt": "c",
         }
@@ -411,6 +447,7 @@ class BardAsync:
             params=params,
             data=data,
             timeout=self.timeout,
+            proxies=self.proxies,
         )
         # Post-processing of response
         resp_dict = json.loads(resp.content.splitlines()[3])
@@ -424,8 +461,12 @@ class BardAsync:
         }
 
     async def export_replit(
-        self, code: str, program_lang: str = None, filename: str = None, **kwargs
-    ) -> str:
+        self,
+        code: str,
+        program_lang: Optional[str] = None,
+        filename: Optional[str] = None,
+        **kwargs,
+    ) -> dict:
         """
         Get export URL to repl.it from code
 
@@ -443,8 +484,8 @@ class BardAsync:
 
         Args:
             code (str): source code
-            program_lang (str): programming language
-            filename (str): filename
+            program_lang (str, optional): programming language
+            filename (str, optional): filename
             **kwargs: instructions, source_path
         Returns:
             dict: Answer from the Bard API in the following format:
@@ -457,7 +498,7 @@ class BardAsync:
         params = {
             "rpcids": "qACoKe",
             "source-path": kwargs.get("source_path", "/"),
-            "bl": "boq_assistant-bard-web-server_20230718.13_p2",
+            "bl": TEXT_GENERATION_WEB_SERVER_PARAM,
             "_reqid": str(self._reqid),
             "rt": "c",
         }
@@ -515,6 +556,7 @@ class BardAsync:
             params=params,
             data=data,
             timeout=self.timeout,
+            proxies=self.proxies,
         )
 
         resp_dict = json.loads(resp.content.splitlines()[3])
@@ -525,7 +567,7 @@ class BardAsync:
         return {"url": url, "status_code": resp.status_code}
 
     async def ask_about_image(
-        self, input_text: str, image: bytes, lang: str = None
+        self, input_text: str, image: bytes, lang: Optional[str] = None
     ) -> dict:
         """
         Send Bard image along with question and get answer async mode
@@ -544,7 +586,7 @@ class BardAsync:
         Args:
             input_text (str): Input text for the query.
             image (bytes): Input image bytes for the query, support image types: jpeg, png, webp
-            lang (str): Language to use.
+            lang (str, optional): Language to use.
 
         Returns:
             dict: Answer from the Bard API in the following format:
@@ -556,7 +598,7 @@ class BardAsync:
                     "text_query": str,
                     "choices": list,
                     "links": list,
-                    "images": set,
+                    "images": list,
                     "program_lang": str,
                     "code": str,
                     "status_code": int
@@ -616,7 +658,7 @@ class BardAsync:
             ],
         ]
         params = {
-            "bl": "boq_assistant-bard-web-server_20230716.16_p2",
+            "bl": TEXT_GENERATION_WEB_SERVER_PARAM,
             "_reqid": str(self._reqid),
             "rt": "c",
         }
@@ -630,6 +672,7 @@ class BardAsync:
             "https://bard.google.com/_/BardChatUi/data/assistant.lamda.BardFrontendService/StreamGenerate",
             params=params,
             data=data,
+            proxies=self.proxies,
         )
 
         # Post-processing of response
