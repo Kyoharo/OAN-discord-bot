@@ -100,23 +100,26 @@ class ChatBard:
                 response = self.bard.get_answer(user_input)
 
             self.content_list.append(response['content'])
-
-            if response['images']:
-                for image in response['images']:
-                    self.content_list.append(image)
+            try:
+                if response['images']:
+                    for image in response['images']:
+                        self.content_list.append(image)
+            except KeyError:
+                print("KeyError ")
+                pass
         except Exception as e:
             print(f"Issue {e} with ((( {self.current_token_index}  ))):\n < {self.token}>")
             if self.current_token_index > len(self.tokens):
                 self.send_email( body = "All tokens has been used please reload.\n\nBR\nOAN ")
                 print(f"{self.token} : {self.current_token_index}")
-                del self.sessions[user_id]
+                
 
             elif self.current_token_index > len(self.tokens) /2:
                 self.send_email( body = "Alert!!\n tokens more then 3.\n\nBR\nOAN ")
                 print(f"{self.token} : {self.current_token_index}")
                 self.current_token_index = self.current_token_index + 1
                 self.token = self.tokens[self.current_token_index]
-                del self.sessions[user_id]
+                
                 self.start(
                     start_input["USER_ID"],
                     start_input["QUESTION"],
@@ -131,7 +134,7 @@ class ChatBard:
                     self.current_token_index = 0
                 self.token = self.tokens[self.current_token_index]
                 print(f"- New tocken = {self.current_token_index}  {self.token} ")
-                del self.sessions[user_id]
+                
                 self.start(
                     start_input["USER_ID"],
                     start_input["QUESTION"],
