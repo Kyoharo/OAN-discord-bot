@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import random
 load_dotenv()
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
-activity = ["/", "OAN"]
+activity = ["Support Palestinians 🇵🇸🇵🇸"]
 
 class Client(commands.Bot):
     def __init__(self):

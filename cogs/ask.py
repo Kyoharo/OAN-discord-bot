@@ -379,7 +379,7 @@ class MyCog1(commands.Cog):
         if message.content.startswith(":") or message.content.startswith("<") or message.content.startswith("!"):
             return  # Exit if the message start with ":"
 
-
+        channel = message.channel
         if len(message.attachments) > 0:
             for attachment in message.attachments:
                 if attachment.content_type.startswith('audio'):
@@ -553,8 +553,7 @@ class MyCog1(commands.Cog):
                                 color=0x6a95a2,
                                 url=image 
                         )
-                        embed.set_author(name="OAN",
-                        icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
                         embed.set_image(url=image)
                         if message.author.avatar:
                             embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
@@ -563,22 +562,33 @@ class MyCog1(commands.Cog):
                         your_question = your_question[:230]
                         embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{image}", color=discord.Color.dark_gold())
                         embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                        if message.author.avatar:
+                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
                         embeds.append(embed)
                 view = PageView(embeds)
-                await message.reply(embed=view.initial(), view=view)
+                try:
+                    await message.reply(embed=view.initial(), view=view)
+                except Exception as e:
+                    message.channel
+                    await channel.send(embed=view.initial(), view=view)
 
             else:
-                your_question = your_question[:230]
-                response = response[0]
-                embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
-                embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                if message.author.avatar:    
-                    embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
-                await message.reply(embed=embed)
+                try:
+                    your_question = your_question[:230]
+                    response = response[0]
+                    embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+                    embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                    if message.author.avatar:    
+                        embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                    await message.reply(embed=embed)
+                except Exception as e:
+                    message.channel
+                    await channel.send(embed=embed)
 
         try:
             guild = message.guild
             print(f"______ Guild: {guild.name},   username: {user_name}      \n-----------------------------")
+            print(pass_question)
         except AttributeError as e:
             print(f"______ name: {message.author.name}        \n----------------------------- ")
         except Exception as e:

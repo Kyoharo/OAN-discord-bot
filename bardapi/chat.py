@@ -104,9 +104,23 @@ class ChatBard:
                 if response['images']:
                     for image in response['images']:
                         self.content_list.append(image)
-            except KeyError:
-                print("KeyError ")
-                pass
+            except KeyError as e:               #Image Error 
+                print(f"KeyError {e}")
+                print(f" UserID: {user_id}\nQuestion: {question}\nIMAGE: {image}")
+                error_message = response['content']
+                #account get the limit reach 
+                if "Unable to get response" in error_message and ("double-check the cookie values" in error_message or "verify your network environment" in error_message or "google account" in error_message):
+                    print("Error: Please double-check the cookie values and verify your network environment or Google account.")
+                    self.current_token_index = self.current_token_index + 1
+                    if self.current_token_index > 8:
+                        self.current_token_index = 0
+                    self.token = self.tokens[self.current_token_index]
+                    print(f"- New tocken = {self.current_token_index}  {self.token} ")
+
+                if question != None:
+                    del self.sessions[user_id]  # Delete user ID from sessions
+                    print(f"{user_id} New chat opened successfully")
+
         except Exception as e:
             print(f"Issue {e} with ((( {self.current_token_index}  ))):\n < {self.token}>")
             if self.current_token_index > len(self.tokens):
