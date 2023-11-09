@@ -123,6 +123,40 @@ def get_image_link(query_text, model):
     return image_link
 
 
+blocked_words = [
+        "dick",
+    "pussy",
+    "fuck",
+    "shit",
+    "cunt",
+    "asshole",
+    "bitch",
+    "hate speech",
+    "insults",
+    "slurs",
+    "violence",
+    "racist",
+    "xenophobic",
+    "graphic descriptions",
+    "personal information",
+    "drug references",
+    "graphic medical terms",
+    "porn",
+    "xxx",
+    "adult content",
+    "erotic",
+    "nude",
+    "sexual content",
+    "explicit images",
+    "sexual acts",
+    "adult material",
+    "mature content",
+    "vulgar",
+    "obscene",
+    "indecent",
+    "lewd"
+]
+
 
 
 
@@ -142,24 +176,23 @@ class Image(commands.Cog):
     app_commands.Choice(name='Model4', value=4),
     ])
     @app_commands.guild_only()
-    async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int] = None):
+    async def imagine(self, interaction: discord.Interaction, prompt: str, models: app_commands.Choice[int]):
         await interaction.response.defer(thinking=True)
-        ban_users = ["well3anaar",'_krozen_']
-
-        if interaction.user.name in ban_users:
-            embed = discord.Embed(
-                title="Invalid user",
-                description="You have been banned from using the imagine command for bad use",
-                color=discord.Color.red()
-            )
-            if interaction.user.avatar:
-                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
-            await interaction.followup.send(embed=embed)
-            try:
-                print(f" imagine: guild: {interaction.guild.name}   user: {interaction.user.name}   ** {prompt}    -- sended baned from using -- \n")
-            except Exception as e:
-                print(f" imagine: user: {interaction.user.name}\n")
-            return
+        for word in blocked_words:
+            if word in prompt:
+                embed = discord.Embed(
+                    title="Invalid Word",
+                    description="Your text contains blocked content. Please remove or replace the inappropriate words.",
+                    color=discord.Color.red()
+                )
+                if interaction.user.avatar:
+                    embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                await interaction.followup.send(embed=embed)
+                try:
+                    print(f" imagine: guild: {interaction.guild.name}   user: {interaction.user.name}   ** {prompt}    -- sended blocked from using -- \n")
+                except Exception as e:
+                    print(f" imagine: user: {interaction.user.name}\n")
+                return
 
             
         loading_images = [

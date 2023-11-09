@@ -46,7 +46,7 @@ class ChatBard:
             os.getenv('BARD_TOKEN5'),
             os.getenv('BARD_TOKEN6'),
             os.getenv('BARD_TOKEN7'),
-            os.getenv('BARD_TOKEN8')
+            os.getenv('BARD_TOKEN8'),
         ]
         self.token = self.tokens[self.current_token_index]
         if language is None:

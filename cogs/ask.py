@@ -10,6 +10,8 @@ import os
 import openpyxl
 from googletrans import Translator
 
+from bardapi import Bard
+bard = Bard(token='cwi9KUQqkP_zUM_oKJLi0nK1wDcJnw-flzWMZyEXLNOfdPpGf5DHnM1ZZcIyslRUxijsAA.', timeout=30)  #abdelrhaman.ataa18
 language_dict = {}
 chat = ChatBard()
 
@@ -288,30 +290,10 @@ class MyCog1(commands.Cog):
         pass_question = f"{your_question}"
     # Detect the language
 
-        response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
+        response = await asyncio.to_thread(chat.start, int(user_id), pass_question)
         language_dict[int(user_id)] = language 
 
-        # if "en" in language or "ja" in language and len(response) < 2500:
-        #     your_question = your_question[:230]
-        #     output_path = f"audio_files/{user_id}/output.wav"
-        #     tts_audio(response[0], output_path, language)
-
-        #     if os.path.exists(output_path):
-        #         embed = discord.Embed(
-        #             title=f""">   ``{your_question}``""",
-        #             description=f"{response}",
-        #             color=discord.Color.dark_gold()
-        #         )
-        #         embed.set_author(
-        #             name="OAN",
-        #             icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png"
-        #         )
-        #         embed.set_footer(text=f'{user_name}', icon_url=interaction.user.avatar.url)
-        #         await interaction.followup.send(embed=embed, file=discord.File(output_path, filename="output.wav"))
-        #         return
-
         embeds = []
-
         if len(response[0]) > 2500 and len(response) == 1:
             response = response[0]
             texts = []
@@ -346,14 +328,26 @@ class MyCog1(commands.Cog):
             view = PageView(embeds)
             await interaction.followup.send(embed=view.initial(), view=view)
 
+
         else:
-            response = response[0]
-            your_question = your_question[:230]
-            embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
-            embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-            if interaction.user.avatar:                
-                embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
-            await interaction.followup.send(embed=embed)
+            output_path = f"audio_files/{user_id}/output.wav"
+            audio = bard.speech(response[0])
+            with open(output_path, "wb") as f:
+                f.write(bytes(audio['audio']))
+            if os.path.exists(output_path):
+                your_question = your_question[:230]
+                embed = discord.Embed(
+                    title=f""">   ``{your_question}``""",
+                    description=f"{response}",
+                    color=discord.Color.dark_gold()
+                )
+                embed.set_author(
+                    name="OAN",
+                    icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png"
+                )
+                if interaction.user.avatar:                
+                    embed.set_footer(text=f'{interaction.user.name}', icon_url=interaction.user.avatar.url)
+                await interaction.followup.send(embed=embed, file=discord.File(output_path, filename="output.wav"))
 
         try:    
             guild = interaction.guild   
@@ -396,8 +390,7 @@ class MyCog1(commands.Cog):
                     your_question, language = transcribe_audio(filename)
                     pass_question = f"{your_question}"
 
-                    response = await asyncio.to_thread(chat.start, int(user_id), pass_question, language)
-                    language_dict[int(user_id)] = language
+                    response = await asyncio.to_thread(chat.start, int(user_id), pass_question)
 
                     # if "en" in language or "ja" in language and len(response) < 2500:
                     #     output_path = f"audio_files/{user_id}/output.wav"
@@ -451,14 +444,25 @@ class MyCog1(commands.Cog):
                         await message.reply(embed=view.initial(), view=view)
 
                     else:
-                        response = response[0]
-                        your_question = your_question[:230]
-                        embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
-                        embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
-                        if message.author.avatar:
-                            embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
-                        await message.reply(embed=embed)
-                        
+                        # response = response[0]
+                        # your_question = your_question[:230]
+                        # embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+                        # embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                        # if message.author.avatar:
+                        #     embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                        # await message.reply(embed=embed)
+                        output_path = f"audio_files/{user_id}/output.wav"
+                        audio = bard.speech(response[0])
+                        with open(output_path, "wb") as f:
+                            f.write(bytes(audio['audio']))
+                        if os.path.exists(output_path):
+                            your_question = your_question[:230]
+                            embed = discord.Embed(title=f""">   ``{your_question}``""", description=f"{response}", color=discord.Color.dark_gold())
+                            embed.set_author(name="OAN", icon_url="https://cdn.discordapp.com/attachments/1085541383563124858/1113276038634541156/neka_xp2.png")
+                            if message.author.avatar:
+                                embed.set_footer(text=f'{user_name}', icon_url=message.author.avatar.url)
+                            await message.reply(embed=embed, file=discord.File(output_path, filename="output.wav"))
+
                 elif attachment.content_type.startswith(('video', 'gif')):
                     return
 
