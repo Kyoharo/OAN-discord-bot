@@ -1,4 +1,3 @@
-
 import os
 import openpyxl
 import discord
@@ -14,17 +13,12 @@ from datetime import datetime, timedelta, timezone
 
 
 def convert_timestamp(timestamp):
-    # Convert the input timestamp to a datetime object
     dt_object = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')
-    
-    # Convert the datetime object to UTC time (assuming the input timestamp is in UTC)
     utc_dt = dt_object.replace(tzinfo=timezone.utc)
     
-    # Convert to Riyadh time (UTC+3)
     riyadh_offset = timedelta(hours=3)
     riyadh_dt = utc_dt + riyadh_offset
     
-    # Convert the Riyadh datetime to the desired format
     formatted_date = riyadh_dt.strftime('%m/%d/%Y %I:%M %p')
     
     return formatted_date
@@ -35,8 +29,6 @@ class stream_cog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.twitch_checker = TwitchStreamChecker()
-
-
 
 
     @app_commands.command(name="announcechannel", description="Sets the discord channel where stream announcements will be posted.")
